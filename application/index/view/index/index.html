@@ -1,0 +1,1373 @@
+<extend name="base/common"/>
+<!--狸猫 首页-->
+<block name="body">
+    <style>
+        .el-header {
+            color: #333;
+            line-height: 60px;
+            text-align: right;
+            font-size: 12px;
+            position: fixed;
+            top: 0;
+            z-index: 100;
+            background: #f5f5f5;
+            width: 100%;
+        }
+
+        .el-aside {
+            color: #333;
+        }
+
+        #menu {
+            position: absolute;
+        }
+
+        .el-menu {
+            box-shadow: 0 0 5px #ddd;
+            z-index: 99;
+            border: 1px solid #ddd;
+        }
+
+        .el-menu-item {
+            color: #555;
+            border-bottom: 1px solid #f3f3f3;
+        }
+
+        .el-menu-item:focus,
+        .el-menu-item:hover {
+            background-color: #e6e9ed;
+            color: #ff5100
+        }
+
+        a {
+            text-decoration: none;
+            color: #000;
+        }
+
+        .el-menu li {
+            height: 35px;
+            line-height: 35px;
+        }
+
+        /***2019/10/14 limao公海列表*/
+        html,
+        body {
+            background-color: #f5f5f5 !important;
+        }
+
+        * {
+            list-style: none;
+            text-decoration: none;
+        }
+
+        .share_hosue_all {
+            padding: 0px;
+        }
+
+        .share_house_list_txt {
+            overflow: hidden !important;
+            white-space: nowrap !important;
+            text-overflow: ellipsis !important;
+            word-break: normal !important;
+            /*line-height: 1.7;*/
+            text-align: left !important;
+            font-size: 20px;
+        }
+
+        .share_house_card {
+            background-color: #fff;
+            /*padding: 0 5px 1px;*/
+            font-size: 0.85rem;
+            box-shadow: 1px 1px 5px #999;
+        }
+
+        p {
+            margin: 0px;
+        }
+
+        .share_house_p {
+            padding: 5px 0;
+            overflow: hidden;
+            height: 16px;
+        }
+
+        .share_hous_divall {
+            padding: 5px 10px 10px;
+        }
+
+        .share_house_pay {
+            font-size: 0.95rem;
+            color: #FF5501;
+            overflow: hidden;
+            height: 18px;
+        }
+
+        .share_house_money_col {
+            color: #999;
+        }
+
+        .share_house_name_ti {
+            padding: 3px 0;
+        }
+
+        .time {
+            font-size: 13px;
+            color: #999;
+        }
+
+        .bottom {
+            margin-top: 13px;
+            line-height: 12px;
+        }
+
+        .button {
+            padding: 0;
+            float: right;
+        }
+
+        .image {
+            width: 100%;
+            height: 200px;
+            /*display: block;*/
+            object-fit: cover;
+        }
+
+        @media screen and (min-width: 970px) {
+            .image {
+                height: 250px;
+            }
+        }
+
+        .clearfix:before,
+        .clearfix:after {
+            display: table;
+            content: "";
+        }
+
+        .clearfix:after {
+            clear: both
+        }
+
+        .share_house_mar {
+            /*margin: 5px 5px 5px 5px;*/
+            font-size: 0.85rem;
+            padding: 10px;
+            transition-duration: 1s;
+            border: 1px solid #f5f5f5;
+        }
+
+        /*.share_house_mar:hover {*/
+        /*border: 1px solid red;*/
+        /*box-shadow: 1px 1px 4px red;*/
+        /*}*/
+
+        .el-tabs__nav-wrap:after {
+            width: 100%;
+            left: -15px;
+        }
+
+        /*.el-tabs__content {*/
+        /*display: none;*/
+        /*}*/
+
+        .text_lists {
+            height: 130px;
+            position: relative;
+        }
+
+        /*11/1*/
+        .el-image {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            /*border-bottom: 1px solid #ddd;*/
+            /*object-fit: cover;*/
+        }
+
+        .el-image__inner {
+            object-fit: cover;
+        }
+
+        .el-icon-picture-outline {
+            font-size: 35px;
+            color: #ddd;
+        }
+
+        /**2019/11/4*/
+        .index_city_txt {
+            line-height: 40px;
+            display: inline-block;
+            list-style: none;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .el-drawer__body {
+            padding: 5px 20px 30px;
+        }
+
+        .choose_btn {
+            position: fixed;
+            bottom: 10px;
+            margin: 0 auto;
+        }
+
+        .el-select {
+            margin-bottom: 10px;
+        }
+
+        .demo-drawer__footer {
+            text-align: center;
+        }
+
+        .demo-drawer__content > div {
+            width: 100%;
+        }
+
+        .house_num {
+            float: right;
+            margin-right: 20px;
+        }
+
+        .grid-content {
+            text-align: center;
+        }
+
+        .el-tabs--top {
+            background: #f5f5f5;
+        }
+
+        .el-tabs__nav {
+            position: fixed;
+            margin-left: -20px;
+            top: 70px;
+            z-index: 1000;
+            width: 100%;
+            background: #f5f5f5;
+        }
+
+        .el-tabs__content {
+            margin-top: 50px;
+        }
+
+        .el-tabs__nav {
+            margin-top: -45px;
+            margin-left: 20px;
+            width: 200px;
+        }
+
+        .hot_title {
+            position: absolute;
+            top: 12px;
+            font-size: 20px;
+            text-shadow: #FF0000 0 0 10px;
+            color: white;
+            width: 100px;
+            line-height: 2em;
+            text-align: center;
+            background-color: rgba(0, 0, 0, 0.6);
+        }
+
+        .show_null {
+            text-align: center;
+            padding-bottom: 300px;
+        }
+
+        .show_null img {
+            width: 300px;
+            margin: 0 auto;
+        }
+
+        .show_null h1 {
+            color: #ccc;
+        }
+
+        .top_right {
+            position: absolute;
+            text-align: right;
+            top: 10px;
+            right: 10px;
+        }
+    </style>
+    <div id="app" v-hide>
+        <el-container>
+            <el-container v-loading="loading">
+                <el-header height="70px" style="padding-top:15px;">
+                    <el-row>
+                        <el-col :span="3">
+                            &nbsp;
+                        </el-col>
+                        <el-col :span="10">
+                            <!--<a href="./choice_city.html">-->
+                            <!--<div style="text-align: center">-->
+                            <!--<i class="el-icon-location-information" style="font-size: 16px;"></i> <span-->
+                            <!--class="index_city_txt">{{city_name}}</span>-->
+                            <!--</div>-->
+                            <!--</a>-->
+                        </el-col>
+                        <el-col :span="11" style="float: right">
+                            <el-row style="float: right">
+                                <el-col :span="12">
+                                    <div style="white-space:nowrap;float: right;">
+                                        <el-input v-model="queryInput" placeholder="输入房源标题、小区查询" @keyup.enter.native="searchEnter"></el-input>
+                                        <a href="{:url('choice_city')}">
+                                            <el-button>
+                                                <i class="el-icon-location-information"></i> {{city_name}}
+                                            </el-button>
+                                        </a>
+                                        <!--抽屉-->
+                                        <el-button @click="dialog = true" label="rtl">
+                                            <i class="el-icon-s-promotion"></i> 筛选
+                                        </el-button>
+                                    </div>
+                                </el-col>
+                            </el-row>
+                        </el-col>
+                    </el-row>
+                </el-header>
+                <el-main style="margin-top: 42px;">
+                    <el-row>
+                        <el-col :span="24">
+                            <div class="grid-content bg-purple-dark"></div>
+                        </el-col>
+                    </el-row>
+                    <template>
+                        <el-tabs v-model="activeName" @tab-click="handleClick">
+                            <!--二手房-->
+                            <el-tab-pane label="二手房" name="first">
+                                <div class="show_null" v-show="no_data">
+                                    <img src="/images/no_data.jpg" alt="">
+                                    <h1>暂无数据</h1>
+                                </div>
+                                <el-row>
+                                    <el-col :span="6" class="share_house_mar" v-for="item in share_house" :key="item">
+                                        <div @click="go_info(item.id)">
+                                            <el-card :body-style="{ padding: '0px' }">
+                                                <div class="demo-image__error">
+                                                    <div class="block">
+                                                        <el-image :src="item.house_resold.show_images" class="image">
+                                                            <div slot="error" class="image-slot">
+                                                                <i class="el-icon-picture-outline"></i>
+                                                            </div>
+                                                        </el-image>
+                                                    </div>
+                                                </div>
+                                                <div style="padding: 14px;" class="text_lists">
+                                                    <el-row :gutter="10" class="share_house_name_ti">
+                                                        <el-col :span="10">
+                                                            <div class="grid-content bg-purple share_house_list_txt">
+                                                                {{item.house_resold.title}}
+                                                            </div>
+                                                        </el-col>
+                                                    </el-row>
+                                                    <div class="top_right">
+                                                        <p
+                                                                style="width:40%;verflow: hidden !important;white-space: nowrap !important;text-overflow: ellipsis !important;word-break: normal !important;">
+                                                            <span
+                                                                    style="font-size: 14px;font-weight: 600;color: red;">{{item.house_resold.price}}</span>
+                                                            <span style="color: red;">万</span>
+                                                        </p>
+                                                        <p>
+                                                            <span
+                                                                    style="color: red;">{{item.house_resold.house_size}}m²</span>
+                                                        </p>
+                                                    </div>
+                                                    <p class="share_house_p">
+                                                        <span class="share_house_money_col">房源小区/楼层: </span>
+                                                        <span>{{item.house_index_str}} /
+                                                            {{item.house_resold.house_floor}}层</span>
+
+                                                    </p>
+                                                    <p class="share_house_p">
+                                                        <span class="share_house_money_col">房源朝向: </span>
+                                                        <span>{{item.house_resold.direction}} /
+                                                            {{item.house_resold.house_config_param}}</span>
+
+                                                    </p>
+                                                    <!-- <p class="share_house_p">
+                                                        <span class="share_house_money_col">房源面积 : </span>
+                                                        <span
+                                                            style="font-size: 16px;color: red;">{{item.house_resold.house_size}}</span>
+                                                        m²
+                                                    </p>
+                                                    <p class="share_house_p">
+                                                        <span class="share_house_money_col">房源售价 : </span>
+                                                        <span>{{item.house_resold.price}}</span>万
+                                                    </p> -->
+                                                    <p class="share_house_p">
+                                                        <span class="share_house_money_col">经纪人 : </span>
+                                                        <span>{{item.store_user.user_profile_info.nickname}}</span>
+                                                    </p>
+                                                    <p class="share_house_p">
+                                                        <span class="share_house_money_col">更新时间 : </span>
+                                                        <span>{{item.house_resold.update_time}}</span>
+                                                    </p>
+                                                </div>
+                                            </el-card>
+                                        </div>
+                                    </el-col>
+                                </el-row>
+                            </el-tab-pane>
+                            <!--新房-->
+                            <el-tab-pane label="新房" name="three">
+                                <div class="show_null" v-show="no_data">
+                                    <img src="/images/no_data.jpg" alt="">
+                                    <h1>暂无数据</h1>
+                                </div>
+                                <el-row>
+                                    <el-col :span="6" class="share_house_mar" v-for="item in house_3" :key="item">
+                                        <div @click="go_info(item.id)">
+                                            <el-card :body-style="{ padding: '0px' }">
+                                                <div class="demo-image__error">
+                                                    <div class="block">
+                                                        <el-image :src="item.house_new.show_images" class="image">
+                                                            <div slot="error" class="image-slot">
+                                                                <i class="el-icon-picture-outline"></i>
+                                                            </div>
+                                                        </el-image>
+                                                    </div>
+                                                </div>
+                                                <div style="padding: 14px;" class="text_lists">
+                                                    <el-row :gutter="10" class="share_house_name_ti">
+                                                        <el-col :span="10">
+                                                            <div class="grid-content bg-purple share_house_list_txt">
+                                                                {{item.house_new.title}}
+                                                            </div>
+                                                        </el-col>
+                                                    </el-row>
+                                                    <div class="top_right">
+                                                        <p>
+                                                            <span
+                                                                    style="font-size: 14px;font-weight: 600;color: red;">{{item.house_new.price}}</span>
+                                                            <span style="color: red;">万</span>
+                                                        </p>
+                                                        <p>
+                                                            <span
+                                                                    style="color: red;">{{item.house_new.house_size}}m²</span>
+                                                        </p>
+                                                    </div>
+                                                    <p class="share_house_p">
+                                                        <span class="share_house_money_col">房源小区/楼层: </span>
+                                                        <span>{{item.house_index_str}} /
+                                                             {{item.house_new.house_floor}}层</span>
+
+                                                    </p>
+                                                    <p class="share_house_p">
+                                                        <span class="share_house_money_col">房源朝向: </span>
+                                                        <span>{{item.house_new.direction}} /
+                                                           {{item.house_new.house_config_param}}</span>
+                                                    </p>
+                                                    <!-- <p class="share_house_p">
+                                                        <span class="share_house_money_col">房源面积 : </span>
+                                                        <span>{{item.house_new.house_size}}</span> m²
+                                                    </p>
+                                                    <p class="share_house_p">
+                                                        <span class="share_house_money_col">房源售价 : </span>
+                                                        <span>{{item.house_new.price}}</span>万
+                                                    </p> -->
+                                                    <p class="share_house_p">
+                                                        <span class="share_house_money_col">经纪人 : </span>
+                                                        <span>{{item.store_user.user_profile_info.nickname}}</span>
+                                                    </p>
+                                                    <p class="share_house_p">
+                                                        <span class="share_house_money_col">更新时间 : </span>
+                                                        <span>{{item.house_new.update_time}}</span>
+                                                    </p>
+                                                </div>
+                                            </el-card>
+                                        </div>
+                                    </el-col>
+                                </el-row>
+                            </el-tab-pane>
+                            <!--租房-->
+                            <el-tab-pane label="租房" name="four">
+                                <div class="show_null" v-show="no_data">
+                                    <img src="/images/no_data.jpg" alt="">
+                                    <h1>暂无数据</h1>
+                                </div>
+                                <el-row>
+                                    <el-col :span="6" class="share_house_mar" v-for="item in house_4" :key="item">
+                                        <div @click="go_info(item.id)">
+                                            <el-card :body-style="{ padding: '0px' }">
+                                                <div class="demo-image__error">
+                                                    <div class="block">
+                                                        <el-image :src="item.house_renting.show_images" class="image">
+                                                            <div slot="error" class="image-slot">
+                                                                <i class="el-icon-picture-outline"></i>
+                                                            </div>
+                                                        </el-image>
+                                                    </div>
+                                                </div>
+                                                <div style="padding: 14px;" class="text_lists">
+                                                    <el-row :gutter="10" class="share_house_name_ti">
+                                                        <el-col :span="10">
+                                                            <div class="grid-content bg-purple share_house_list_txt">
+                                                                {{item.house_renting.title}}
+                                                            </div>
+                                                        </el-col>
+                                                    </el-row>
+                                                    <div class="top_right">
+                                                        <p>
+                                                            <span
+                                                                    style="font-size: 14px;font-weight: 600;color: red;">{{item.house_renting.price}}</span>
+                                                            <span style="color: red;">元/月</span>
+                                                        </p>
+                                                        <p>
+                                                            <span
+                                                                    style="color: red;">{{item.house_renting.house_size}}m²</span>
+                                                        </p>
+                                                    </div>
+                                                    <p class="share_house_p">
+                                                        <span class="share_house_money_col">房源小区/楼层: </span>
+                                                        <span>{{item.house_index_str}} /
+                                                            {{item.house_renting.house_floor}}层</span>
+
+                                                    </p>
+                                                    <p class="share_house_p">
+                                                        <span class="share_house_money_col">房源朝向: </span>
+                                                        <span>{{item.house_renting.direction}} /
+                                                            {{item.house_renting.house_config_param}}</span>
+                                                    </p>
+                                                    <!-- <p class="share_house_p">
+                                                        <span class="share_house_money_col">房源面积 : </span>
+                                                        <span>{{item.house_renting.house_size}}</span> m²
+                                                    </p>
+                                                    <p class="share_house_p">
+                                                        <span class="share_house_money_col">房源租价 : </span>
+                                                        <span>{{item.house_renting.price}}</span>元/月
+                                                    </p> -->
+                                                    <p class="share_house_p">
+                                                        <span class="share_house_money_col">经纪人 : </span>
+                                                        <span>{{item.store_user.user_profile_info.nickname}}</span>
+                                                    </p>
+                                                    <p class="share_house_p">
+                                                        <span class="share_house_money_col">更新时间 : </span>
+                                                        <span>{{item.house_renting.update_time}}</span>
+                                                    </p>
+
+                                                </div>
+                                            </el-card>
+                                        </div>
+                                    </el-col>
+                                </el-row>
+                            </el-tab-pane>
+<!--                            新楼盘-->
+                            <el-tab-pane label="新楼盘" name="second">
+                                <div class="show_null" v-show="no_data">
+                                    <img src="/images/no_data.jpg" alt="">
+                                    <h1>暂无数据</h1>
+                                </div>
+                                <!--新楼盘的样式-->
+                                <el-row>
+                                    <el-col :span="6" class="share_house_mar" v-for="item in new_house" :key="item">
+                                        <div @click="build_info(item.id)">
+                                            <el-card :body-style="{ padding: '0px' }">
+                                                <div>
+                                                    <div class="hot_title" v-show="item.is_top">
+                                                        <i class="el-icon-s-promotion"></i>
+                                                        热门
+                                                    </div>
+                                                    <img :src="item.logo" class="image">
+                                                </div>
+                                                <div style="padding: 14px;" class="text_lists">
+                                                    <el-row :gutter="22" class="share_house_name_ti">
+                                                        <!--<el-col :span="15" v-show="item.is_top">-->
+                                                        <!--<div class="grid-content bg-purple share_house_list_txt">-->
+                                                        <!--111111-->
+                                                        <!--</div>-->
+                                                        <!--</el-col>-->
+                                                        <el-col :span="15">
+                                                            <div class="grid-content bg-purple share_house_list_txt">
+                                                                {{item.title}}
+                                                            </div>
+                                                        </el-col>
+                                                        <el-col :span="9" style="padding: 0;">
+                                                            <div class="grid-content bg-purple share_house_pay">
+                                                                {{item.address}}
+                                                            </div>
+                                                        </el-col>
+                                                    </el-row>
+                                                    <p class="share_house_p">
+                                                        <span class="share_house_money_col">楼盘平方价 : </span>
+                                                        <span>{{item.square_price}}</span>
+                                                    </p>
+                                                    <p class="share_house_p">
+                                                        <span class="share_house_money_col">楼盘面积 : </span>
+                                                        <span>{{item.size}}</span>
+                                                    </p>
+                                                    <p class="share_house_p">
+                                                        <span class="share_house_money_col">楼盘佣金 </span>
+                                                        <span>{{item.commission}}</span>
+                                                    </p>
+                                                    <p class="share_house_p">
+                                                        <span class="share_house_money_col">更新时间 : </span>
+                                                        <span>{{item.update_time}}</span>
+                                                    </p>
+
+                                                </div>
+                                            </el-card>
+                                        </div>
+                                    </el-col>
+                                </el-row>
+                            </el-tab-pane>
+                        </el-tabs>
+                    </template>
+                    <!--筛选-->
+                    <el-drawer title="筛选" :before-close="handleClose" :visible.sync="dialog" direction="rtl"
+                               custom-class="demo-drawer" ref="drawer">
+                        <div class="demo-drawer__content">
+
+                            <template>
+                                <p style="text-align: center;font-size: 12px;">自定义面积(单位㎡)</p>
+                                <el-row style="margin-top: 10px;margin-bottom: 10px;">
+                                    <el-col :span="11">
+                                        <div class="grid-content bg-purple">
+                                            <el-input v-model="input1" placeholder="最低面积"></el-input>
+                                        </div>
+                                    </el-col>
+                                    <el-col :span="2">
+                                        <div class="grid-content bg-purple-light">
+                                            _
+                                        </div>
+                                    </el-col>
+                                    <el-col :span="11">
+                                        <div class="grid-content bg-purple">
+                                            <el-input v-model="input2" placeholder="最高面积"></el-input>
+                                        </div>
+                                    </el-col>
+                                </el-row>
+                            </template>
+                            <template>
+                                <p style="text-align: center;font-size: 12px;">自定义价格</p>
+                                <el-row style="margin-top: 10px;margin-bottom: 10px;">
+                                    <el-col :span="11">
+                                        <div class="grid-content bg-purple">
+                                            <el-input v-model="input3" placeholder="最低价"></el-input>
+                                        </div>
+                                    </el-col>
+                                    <el-col :span="2">
+                                        <div class="grid-content bg-purple-light">
+                                            _
+                                        </div>
+                                    </el-col>
+                                    <el-col :span="11">
+                                        <div class="grid-content bg-purple">
+                                            <el-input v-model="input4" placeholder="最高价"></el-input>
+                                        </div>
+                                    </el-col>
+                                </el-row>
+                            </template>
+<!--                            新增楼盘名筛选/-->
+                            <template>
+                                <el-row style="margin-top: 10px;margin-bottom: 10px;" v-if="activeName == 'second'">
+                                    <el-col :span="24">
+                                        <el-input v-model="input0" placeholder="楼盘名称查询" />
+                                    </el-col>
+                                </el-row>
+                                </el-row>
+                            </template>
+
+                            <template>
+                                <el-select v-model="value2" placeholder="产权不限">
+                                    <el-option v-for="item in property" :key="item.value" :label="item.label"
+                                               :value="item.value">
+                                    </el-option>
+                                </el-select>
+                            </template>
+                            <template>
+                                <el-select v-model="value3" placeholder="装修不限">
+                                    <el-option v-for="item in renovation" :key="item.value" :label="item.label"
+                                               :value="item.value">
+                                    </el-option>
+                                </el-select>
+                            </template>
+                            <template>
+                                <el-select v-model="value4" placeholder="类型不限">
+                                    <el-option v-for="item in type" :key="item.value" :label="item.label"
+                                               :value="item.value">
+                                    </el-option>
+                                </el-select>
+                            </template>
+                            <template>
+                                <el-select v-model="value5" placeholder="价格排序不限">
+                                    <el-option v-for="item in sort_price" :key="item.value" :label="item.label"
+                                               :value="item.value">
+                                    </el-option>
+                                </el-select>
+                            </template>
+                            <template>
+                                <el-select v-model="value6" placeholder="面积排序不限">
+                                    <el-option v-for="item in sort_house_size" :key="item.value" :label="item.label"
+                                               :value="item.value">
+                                    </el-option>
+                                </el-select>
+                            </template>
+                            <template>
+                                <el-select v-model="value7" placeholder="时间排序不限">
+                                    <el-option v-for="item in sort_time" :key="item.value" :label="item.label"
+                                               :value="item.value">
+                                    </el-option>
+                                </el-select>
+                            </template>
+                            <div class="demo-drawer__footer">
+                                <el-button @click="dialog = false">取 消</el-button>
+                                <el-button type="primary" @click="$refs.drawer.closeDrawer()" :loading="loading">确定
+                                </el-button>
+                            </div>
+                        </div>
+                    </el-drawer>
+                </el-main>
+                <el-footer style="text-align: center">
+                    <!-- <el-pagination style="text-align: center" hide-on-single-page background layout="prev, pager, next"
+                        :total="50">
+                    </el-pagination> -->
+                    <el-button type="text" icon="el-icon-arrow-left" size="medium" @click="prevPage"
+                               :disabled="disabled_downBtn">上一页
+                    </el-button>
+                    <el-button type="text" size="medium" @click="nextPage" :disabled="nextBtn">下一页<i
+                            class="el-icon-arrow-right el-icon--right"></i></el-button>
+                    <el-link type="info" class="house_num">共 {{count}} 套房</el-link>
+                </el-footer>
+            </el-container>
+        </el-container>
+    </div>
+</block>
+<block name="js">
+    <script type="text/javascript">
+        let clickTimer = null;
+        let user_data = JSON.parse('{:cache("user_data")}');
+        let user_token = '{:input("user_token")}';
+        let store_id = '{:input("store_id")}';
+        user_token = user_token ? user_token : user_data.user_token.user_token;
+        store_id = store_id ? store_id : user_data.store_user_info.store_id;
+        var myvue = new Vue({
+            el: '#app',
+            data: {
+                // 查询
+                queryInput:'',
+
+                no_data: false,
+                showlist: [],
+                city_name: '宿迁',
+                //抽屉
+                drawer: false,
+                dialog: false,
+                direction: 'rtl',
+                newbulid_hid: false,
+                loading: false,
+                nextBtn: false,
+                disabled_downBtn: true,
+                search: '',
+                page: 1,
+                page_size: 32,
+                activeName: 'first',
+                value: '',
+                value1: '',
+                value2: '',
+                value3: '',
+                value4: '',
+                value5: '',
+                value6: '',
+                value7: '',
+                input0:'',
+                input1: '',
+                input2: '',
+                input3: '',
+                input4: '',
+                share_house: [],
+                count: '',
+                new_house: [],
+                header: {user_token: user_token, store_id: store_id},
+                //装修
+                renovation: [{
+                    value: '精装修',
+                    label: '精装修'
+                }, {
+                    value: '简单装修',
+                    label: '简单装修'
+                }, {
+                    value: '中档装修',
+                    label: '中档装修'
+                }, {
+                    value: '高档装修',
+                    label: '高档装修'
+                }, {
+                    value: '毛坯',
+                    label: '毛坯'
+                }],
+                //价格排序
+                sort_price: [{
+                    value: '1',
+                    label: '总价从高到低'
+                }, {
+                    value: '2',
+                    label: '总价从低到高'
+                }],
+                //面积排序
+                sort_house_size: [{
+                    value: '1',
+                    label: '面积从大到小'
+                }],
+                //时间排序
+                sort_time: [{
+                    value: '1',
+                    label: '最新'
+                }, {
+                    value: '2',
+                    label: '最旧'
+                }],
+                //类型
+                type: [{
+                    value: '公寓',
+                    label: '公寓'
+                }, {
+                    value: '小高层',
+                    label: '小高层'
+                }, {
+                    value: '商铺',
+                    label: '商铺'
+                }, {
+                    value: '洋房',
+                    label: '洋房'
+                }, {
+                    value: '车库',
+                    label: '车库'
+                }, {
+                    value: '商铺住宅',
+                    label: '商铺住宅'
+                }, {
+                    value: '别墅',
+                    label: '别墅'
+                }],
+                // 产权
+                property: [{
+                    value: '私产',
+                    label: '私产'
+                }, {
+                    value: '共产',
+                    label: '共产'
+                }, {
+                    value: '小产权',
+                    label: '小产权'
+                }, {
+                    value: '单位产权',
+                    label: '单位产权'
+                }, {
+                    value: '使用权',
+                    label: '使用权'
+                }, {
+                    value: '协议房',
+                    label: '协议房'
+                }, {
+                    value: '售后产权',
+                    label: '售后产权'
+                }],
+                //地址
+                value_address: [],
+                options: [{
+                    value: '宿迁',
+                    label: '宿迁',
+                    children: [{
+                        value: '宿城',
+                        label: '宿城',
+                        // children: [{
+                        //     value: '宿豫',
+                        //     label: '宿豫'
+                        // }]
+                    }, {
+                        value: '宿豫',
+                        label: '宿豫',
+                        children: [{
+                            value: '湖滨新城',
+                            label: '湖滨新城'
+                        }]
+                    }]
+                }, {
+                    value: '徐州',
+                    label: '徐州',
+                    disabled: true,
+                    children: [{
+                        value: 'basic',
+                        label: 'Basic',
+                        children: [{
+                            value: 'xx区',
+                            label: 'xx区'
+                        }]
+                    }, {
+                        value: 'form',
+                        label: 'Form',
+                        children: [{
+                            value: 'radio',
+                            label: 'Radio 单选框'
+                        }]
+                    }]
+                }],
+                form: {
+                    name: '',
+                    region: '',
+                    date1: '',
+                    date2: '',
+                    delivery: false,
+                    type: [],
+                    resource: '',
+                    desc: ''
+                },
+                formLabelWidth: '80px',
+                house_3: [],
+                house_4: [],
+                house_type_id: 1,
+            },
+            created() {
+                this.return_();
+            },
+            methods: {
+                searchEnter(){
+                    this.search = this.queryInput;
+                    if (this.activeName == 'first') {
+                        this.lists(2);
+                    } else if (this.activeName == 'second') {
+                        this.newLists();
+                    } else if (this.activeName == 'three') {
+                        this.lists(1);
+                    } else if (this.activeName == 'four') {
+                        this.lists(3);
+                    }
+                    // this.loading = true;
+                    // let data = Object.assign({
+                    //     url: 'extend/manager/Customer/lists',
+                    //     search_name: this.input2,
+                    //     page: this.page,
+                    // }, this.header);
+                    // console.log(data);
+                    // utils.ajax({
+                    //     data: data,
+                    //     success: (res) => {
+                    //         this.loading = false;
+                    //         console.log('1111', res.data);
+                    //         if (res.data.code == -2 && res.data.code != 1) {
+                    //             this.$message.error(res.data.msg);
+                    //             return false;
+                    //         }
+                    //     },
+                    //     error: function (res) {
+                    //         console.log('error' + res)
+                    //     }
+                    // });
+                },
+                handleChange(value) {
+                    console.log(value);
+                },
+                //关闭抽屉
+                handleClose(done) {
+                    this.page = 1;
+                    if (this.activeName == 'first') {
+                        this.lists(2);
+                    } else if (this.activeName == 'second') {
+                        this.newLists();
+                    } else if (this.activeName == 'three') {
+                        this.lists(1);
+                    } else if (this.activeName == 'four') {
+                        this.lists(3);
+                    }
+                    this.loading = false;
+                    this.no_data = false;
+                    done();
+                },
+                return_() {
+                    this.no_data = false;
+                    if ("{:input('return_')}" != "") {
+                        let return_ = "{:input('return_')}";
+                        let return__ = return_.split(',');
+                        let page = return__[0];
+                        let type = return__[1];
+                        this.page = page;
+                        if (type == 1) {
+                            this.lists(1);
+                            this.activeName = 'three';
+                        } else if (type == 2) {
+                            this.lists(2);
+                            this.activeName = 'first';
+                        } else if (type == 3) {
+                            this.lists(3);
+                            this.activeName = 'four';
+                        } else {
+                            this.newLists();
+                            this.activeName = 'second';
+                        }
+                    } else {
+                        this.lists(2);
+                    }
+                },
+                go_info(id) {
+                    window.location.href = '{:url("info")}?house_share_id=' + id + "," + this.page + ',' + this.house_type_id;
+                },
+                build_info(id) {
+                    window.location.href = '{:url("newbuild_info")}?real_num=' + id + "," + this.page;
+                },
+                prevPage() {
+                    if (this.page > 1) {
+                        this.page--;
+                    }
+                    if (this.activeName == 'first') {
+                        this.lists(2);
+                    } else if (this.activeName == 'second') {
+                        this.newLists();
+                    } else if (this.activeName == 'three') {
+                        this.lists(1);
+                    } else if (this.activeName == 'four') {
+                        this.lists(3);
+                    }
+                    if (this.page == 1) {
+                        this.disabled_downBtn = true;
+                        this.nextBtn = false;
+                    }
+                },
+                nextPage() {
+                    this.page++;
+                    // alert(this.value)
+                    if (this.activeName == 'first') {
+                        this.lists(2);
+                    } else if (this.activeName == 'second') {
+                        this.newLists();
+                    } else if (this.activeName == 'three') {
+                        this.lists(1);
+                    } else if (this.activeName == 'four') {
+                        this.lists(3);
+                    }
+                    if (this.page != 1) {
+                        this.disabled_downBtn = false;
+                    }
+                },
+                lists(house_type_id) {
+                    this.no_data = false;
+                    this.house_type_id = house_type_id;
+                    //选择地址
+                    if ("{:input('city')}" != "") {
+                        let city = "{:input('city')}";
+                        var city_ = city.split(',');
+                    } else {
+                        var city_ = [];
+                        city_[0] = 0;
+                        city_[1] = '';
+                    }
+                    if (this.value2 == '产权不限') {
+                        this.value2 = '';
+                    }
+                    if (this.value3 == '装修不限') {
+                        this.value3 = '';
+                    }
+                    if (this.value4 == '类型不限') {
+                        this.value4 = '';
+                    }
+                    if (this.value5 == '价格排序不限') {
+                        this.value5 = '';
+                    }
+                    if (this.value6 == '面积排序不限') {
+                        this.value6 = '';
+                    }
+                    if (this.value7 == '时间排序不限') {
+                        this.value7 = '';
+                    }
+                    var house_size = '';
+                    var price = '';
+                    if (this.input1 == '' && this.input2 == '') {
+                        house_size = '';
+                    } else {
+                        if (this.input1 + ',' + this.input2 == ',') {
+                            house_size = '';
+                        } else {
+                            house_size = this.input1 + ',' + this.input2;
+                        }
+                    }
+                    if (this.input3 == '' && this.input4 == '') {
+                        price = '';
+                    } else {
+                        if (this.input3 + ',' + this.input4 == ',') {
+                            price = '';
+                        } else {
+                            price = this.input3 + ',' + this.input4;
+                        }
+                    }
+                    // alert(localStorage.getItem("city_id"));
+                    if (localStorage.getItem("city_id") == 0) {
+                        this.city_name = '宿迁';
+                        localStorage.setItem("city_id", 23955);
+                    } else if (city_[0] != 0) {
+                        localStorage.setItem("city_name", city_[1]);
+                        localStorage.setItem("city_id", city_[0]);
+                        this.city_name = localStorage.getItem("city_name");
+                    } else if (localStorage.getItem("city_id") != 0) {
+                        this.city_name = localStorage.getItem("city_name");
+                    }
+                    let data = Object.assign({
+                        url: 'extend/manager/house_share/lists',
+                        search:this.search,
+                        page: this.page,
+                        page_size: this.page_size,
+                        house_property: this.value2, //产权
+                        decoration: this.value3, //装修
+                        house_type: this.value4, //类型
+                        order_price: this.value5, //价格排序
+                        order_house_size: this.value6, //面积排序
+                        order_time: this.value7, //时间排序
+                        house_size: house_size, //面积
+                        price: price, //价格
+                        area_id: localStorage.getItem("city_id"), //地区id
+                        house_type_id: house_type_id
+                    }, this.header);
+                    utils.ajax({
+                        data: data,
+                        success: (res) => {
+                            console.log(res);
+                            this.loading = false;
+                            if (res.data.code == -2) {
+                                this.$message.error(res.data.msg);
+                                return false;
+                            } else if (res.data.code == 0) {
+                                this.$message.error(res.data.msg);
+                                return false;
+                            } else if (res.data.code == 1) {
+                                // console.log(JSON.stringify(res.data.data));
+                                this.value2 = '';
+                                this.value3 = '';
+                                this.value4 = '';
+                                this.value5 = '';
+                                this.value6 = '';
+                                this.value7 = '';
+                                this.input1 = '';
+                                this.input2 = '';
+                                this.input3 = '';
+                                this.input4 = '';
+                                this.count = res.data.count;
+                                if (res.data.data == '') {
+                                    this.no_data = true;
+                                }
+                                if (house_type_id == 2) {
+                                    for (let i = 0; i < res.data.data.length; i++) {
+                                        res.data.data[i].house_resold.show_images = res.data.data[i].house_resold.show_images.split(',');
+                                        if (res.data.data[i].house_resold.show_images.length > 0) {
+                                            if (res.data.data[i].house_resold.show_images[0].length > 1) {
+                                                res.data.data[i].house_resold.show_images = res.data.data[i].house_resold.show_images[0].substr(0, 4).toLowerCase() == 'http' ? res.data.data[i].house_resold.show_images[0] : utils.img_domain + res.data.data[i].house_resold.show_images[0];
+                                            } else {
+                                                res.data.data[i].house_resold.show_images = '';
+                                            }
+                                        } else {
+                                            res.data.data[i].house_resold.show_images = '';
+                                        }
+                                        res.data.data[i].house_index_str = res.data.data[i].house_index_str.split('-')[0];
+                                        let param = res.data.data[i].house_resold.house_config_param = res.data.data[i].house_resold.house_config_param.split(',');
+                                        res.data.data[i].house_resold.house_config_param = param[0] + '室' + param[1] + '厅' + param[2] + '卫' + param[3] + '厨';
+                                        res.data.data[i].house_resold.price = res.data.data[i].house_resold.price.split('.')[0];
+                                    }
+                                    this.share_house = res.data.data;
+                                    // console.log(JSON.stringify(res.data.data));
+                                } else if (house_type_id == 1) {
+                                    for (let i = 0; i < res.data.data.length; i++) {
+                                        res.data.data[i].house_new.show_images = res.data.data[i].house_new.show_images.split(',');
+                                        if (res.data.data[i].house_new.show_images.length > 0) {
+                                            if (res.data.data[i].house_new.show_images[0].length > 1) {
+                                                res.data.data[i].house_new.show_images = res.data.data[i].house_new.show_images[0].substr(0, 4).toLowerCase() == 'http' ? res.data.data[i].house_new.show_images[0] : utils.img_domain + res.data.data[i].house_new.show_images[0];
+                                            } else {
+                                                res.data.data[i].house_new.show_images = '';
+                                            }
+                                        } else {
+                                            res.data.data[i].house_new.show_images = '';
+                                        }
+                                        res.data.data[i].house_index_str = res.data.data[i].house_index_str.split('-')[0];
+                                        let param = res.data.data[i].house_new.house_config_param = res.data.data[i].house_new.house_config_param.split(',');
+                                        res.data.data[i].house_new.house_config_param = param[0] + '室' + param[1] + '厅' + param[2] + '卫' + param[3] + '厨';
+                                        res.data.data[i].house_new.price = res.data.data[i].house_new.price + '';
+                                        let s = res.data.data[i].house_new.price.split('.')[0];
+                                        res.data.data[i].house_new.price = s;
+                                    }
+                                    this.house_3 = res.data.data;
+                                    // console.log(JSON.stringify(this.house_3));
+                                } else {
+                                    for (let i = 0; i < res.data.data.length; i++) {
+                                        res.data.data[i].house_renting.show_images = res.data.data[i].house_renting.show_images.split(',');
+                                        if (res.data.data[i].house_renting.show_images.length > 0) {
+                                            if (res.data.data[i].house_renting.show_images[0].length > 1) {
+                                                res.data.data[i].house_renting.show_images = res.data.data[i].house_renting.show_images[0].substr(0, 4).toLowerCase() == 'http' ? res.data.data[i].house_renting.show_images[0] : utils.img_domain + res.data.data[i].house_renting.show_images[0];
+                                            } else {
+                                                res.data.data[i].house_renting.show_images = '';
+                                            }
+                                        } else {
+                                            res.data.data[i].house_renting.show_images = '';
+                                        }
+                                        res.data.data[i].house_index_str = res.data.data[i].house_index_str.split('-')[0];
+                                        let param = res.data.data[i].house_renting.house_config_param = res.data.data[i].house_renting.house_config_param.split(',');
+                                        res.data.data[i].house_renting.house_config_param = param[0] + '室' + param[1] + '厅' + param[2] + '卫' + param[3] + '厨';
+                                        res.data.data[i].house_renting.price = res.data.data[i].house_renting.price.split('.')[0];
+                                    }
+                                    this.house_4 = res.data.data;
+                                    // console.log(JSON.stringify(this.house_4));
+                                }
+                                if (this.page == 1) {
+                                    if (this.share_house.length < 32) {
+                                        this.disabled_downBtn = true;
+                                        this.nextBtn = true;
+                                    } else {
+                                        this.disabled_downBtn = true;
+                                        this.nextBtn = false;
+                                    }
+                                } else {
+                                    if (this.share_house.length < 32) {
+                                        this.disabled_downBtn = false;
+                                        this.nextBtn = true;
+                                    } else {
+                                        this.disabled_downBtn = false;
+                                        this.nextBtn = false;
+                                    }
+                                }
+                            }
+                        },
+                        error: function (res) {
+                            console.log('error' + res);
+                        }
+                    })
+                },
+                //新楼盘获取数据方法
+                newLists() {
+                    //用来判断输入的搜索内容 弹窗
+                    // alert(this.input0);
+                    this.no_data = false;
+                    let data = Object.assign({
+                        url: 'extend/manager/report_building/getBuildingLists',
+                        page: this.page,
+                        page_size: this.page_size,
+                        title:this.input0
+                    }, this.header);
+                    utils.ajax({
+                        data: data,
+                        success: (res) => {
+                            // console.log(JSON.stringify(res.data.data));
+                            this.loading = false;
+                            if (res.data.code == -2) {
+                                this.$message.error(res.data.msg);
+                                return false;
+                            } else if (res.data.code == 0) {
+                                this.$message.error(res.data.msg);
+                                return false;
+                            } else if (res.data.code == 1) {
+                                this.count = res.data.count;
+                                for (let i = 0; i < res.data.data.length; i++) {
+                                    res.data.data[i].logo = res.data.data[i].logo.split(',');
+                                    if (res.data.data[i].logo.length > 0) {
+                                        if (res.data.data[i].logo[0].length > 1) {
+                                            res.data.data[i].logo = res.data.data[i].logo[0].substr(0, 4).toLowerCase() == 'http' ? res.data.data[i].logo[0] : utils.img_domain + res.data.data[i].logo[0];
+                                        } else {
+                                            res.data.data[i].logo = '';
+                                        }
+                                    } else {
+                                        res.data.data[i].logo = '';
+                                    }
+                                }
+                                if (res.data.data.length == 0) {
+                                    this.no_data = true;
+                                }
+                                this.new_house = res.data.data;
+                                for (let i = 0; i < this.new_house.length; i++) {
+                                    let date = new Date(this.new_house[i].update_time * 1000);
+                                    var Y = date.getFullYear() + '-';
+                                    var M = (date.getMonth() + 1 < 10 ? '0' + (date.getMonth() + 1) : date.getMonth() + 1) + '-';
+                                    var D = date.getDate() + ' ';
+                                    var h = date.getHours() + ':';
+                                    var m = date.getMinutes() + ':';
+                                    var s = date.getSeconds();
+                                    this.new_house[i].update_time = Y + M + D + h + m + s;
+                                }
+                                for (var i = 0; i < this.new_house.length; i++) {
+                                    if (this.new_house[i].is_top == 0) {
+                                        this.new_house[i].is_top = false;
+                                    } else {
+                                        this.new_house[i].is_top = true;
+                                    }
+                                }
+                                // console.log(JSON.stringify(this.new_house));
+                                if (this.page == 1) {
+                                    if (this.share_house.length < 32) {
+                                        this.disabled_downBtn = true;
+                                        this.nextBtn = true;
+                                    } else {
+                                        this.disabled_downBtn = true;
+                                        this.nextBtn = false;
+                                    }
+                                } else {
+                                    if (this.share_house.length < 32) {
+                                        this.disabled_downBtn = false;
+                                        this.nextBtn = true;
+                                    } else {
+                                        this.disabled_downBtn = false;
+                                        this.nextBtn = false;
+                                    }
+                                }
+                            }
+                            // console.log(data);
+                        },
+                        error: function (res) {
+                            console.log('error' + res)
+                        }
+                    })
+                },
+                // //点击头部tab切换当时第二个时候显示另一个页面【新楼盘的
+                // showMessage(e) {
+                //     this.page = 1;
+                //     console.log(e);
+                //     this.share_house = e;
+                //     if (e == 1) {
+                //
+                //     } else {
+                //
+                //     }
+                //     this.disabled_downBtn = true;
+                //     this.nextBtn = false;
+                // },
+                handleClick(tab, event) {
+                    if (tab.name === 'first') {
+                        this.lists(2);
+                    } else if (tab.name === 'second') {
+                        this.newLists();
+                    } else if (tab.name === 'three') {
+                        this.lists(1);
+                    } else if (tab.name === 'four') {
+                        this.lists(3);
+                    }
+                },
+            },
+            //这里的方法放置的是点击搜素框筛选的功能
+            computed: {
+                // 计算数学，匹配搜索
+                filteredArticles: function () {
+                    var articles_array = this.share_house,
+                        searchString = this.search;
+
+                    if (!searchString) {
+                        return articles_array;
+                    }
+
+                    searchString = searchString.trim().toLowerCase();
+                    //.trim() javascript方法 去除字符串头尾空格
+                    //.toLowerCase() javascript方法 把字符串转换为小写
+
+                    articles_array = articles_array.filter(function (item) {
+                        //filter() 方法创建一个新的数组，新数组中的元素是通过检查指定数组中符合条件的所有元素。
+                        //写判断，当输入框中满足以下搜索条件时显示对应数据
+                        if (item.house_index_str.toLowerCase().indexOf(searchString) !== -1) {
+                            return item;
+                        } else if (item.house_resold.title.toLowerCase().indexOf(searchString) !== -1) {
+                            return item;
+                        }
+                    });
+                    // 返回过来后的数组
+                    return articles_array;
+
+                },
+            }
+        });
+        //关闭右键菜单
+        window.onclick = function (e) {
+            myvue.$data.show = false;
+        }
+    </script>
+</block>

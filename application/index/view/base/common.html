@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>房妈妈</title>
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
+    <link rel="stylesheet" href="/static/elementui/2.11.0/lib/theme/index.css">
+    <link rel="stylesheet" href="/css/base.css">
+    <link rel="stylesheet" href="/css/common.css">
+    <script type="text/javascript" src="/static/vue/2.6.10/vue.min.js"></script>
+    <script type="text/javascript" src="/static/elementui/2.11.0/lib/index.js"></script>
+    <block name="css"></block>
+</head>
+<body>
+<div id="fangAppMain">
+    <block name="body"></block>
+</div>
+</body>
+<script src="https://cdn.staticfile.org/axios/0.18.0/axios.min.js"></script>
+<script type="text/javascript" src="/js/common.js"></script>
+<script>
+
+    //document.oncontextmenu=function(e){return false};
+    /*let myVues = new Vue({
+        el: '#fangAppMain',
+    });
+    let loadings = myVues.$loading({
+        lock: true,
+        text: 'Loading',
+        background: 'rgba(0, 0, 0, 0.0)'
+    });
+    window.onload = function () {
+        loadings.close();
+    }*/
+    /*
+
+        document.onreadystatechange = function () {
+            if (document.readyState === "uninitialized") {
+                console.log('uninitialized');
+            }
+            if (document.readyState === "loading") {
+                console.log('loading');
+            }
+            if (document.readyState === "interactive") {
+                console.log('interactive',new Date().getTime());
+                var a = new Date().getTime();
+            }
+            if (document.readyState === "complete") {
+                console.log('complete',   new Date().getTime() );
+            }
+        }
+    */
+
+
+</script>
+<block name="js"></block>
+</html>

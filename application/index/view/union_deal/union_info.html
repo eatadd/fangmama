@@ -1,0 +1,719 @@
+<extend name="base/common"/>
+
+<block name="body">
+    <style>
+        .el-header {
+            color: #333;
+            line-height: 60px;
+            text-align: right;
+            font-size: 12px
+        }
+
+        .el-aside {
+            color: #333;
+        }
+
+        #menu {
+            position: absolute;
+        }
+
+        .el-menu {
+            box-shadow: 0 0 5px #ddd;
+            z-index: 99;
+            border: 1px solid #ddd;
+        }
+
+        .el-menu-item {
+            color: #555;
+            border-bottom: 1px solid #f3f3f3;
+        }
+
+        .el-menu-item:focus, .el-menu-item:hover {
+            background-color: #e6e9ed;
+            color: #ff5100
+        }
+
+        a {
+            text-decoration: none
+        }
+
+        .el-menu li {
+            height: 35px;
+            line-height: 35px;
+        }
+
+        .buliding_home_name {
+            color: #999;
+            margin-right: 10px;
+        }
+
+        .build_border_size {
+            font-size: 0.9rem;
+            color: #999;
+        }
+
+        .bulid_newtim_col {
+            padding: 5px 0px;
+        }
+
+        .bulid_info_tow_tit > h3 {
+            display: inline-block;
+        }
+
+        .bulid_info_tow_tit {
+            display: flex;
+            align-items: center;
+        }
+
+        .bulid_info_tow_tit > span {
+            background-color: #FF5501;
+            width: 4px;
+            display: inline-block;
+            height: 20px;
+            margin-right: 10px;
+        }
+
+        .build_info_two {
+            padding-top: 10px;
+        }
+
+        .build_ifo_two_news {
+            padding: 0 13px;
+        }
+
+        .build_ifo_two_news_dv {
+            font-size: 0.9rem;
+            line-height: 2;
+        }
+
+        .build_ifo_two_news_dv > span:first-child {
+            color: #999;
+            padding-right: 15px;
+        }
+
+        .build_house_ypp_img {
+            width: 100%;
+            /*height: 260px;*/
+        }
+
+        .build_three_neararea {
+            padding: 10px 0;
+        }
+
+        .build_three_area {
+            padding: 5px 0;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .build_three_area > span:first-child {
+            color: #999;
+            padding-right: 15px;
+        }
+
+        #allmap {
+            width: 100%;
+            height: 500px;
+            overflow: hidden;
+            margin: 0;
+            font-family: "微软雅黑";
+        }
+
+        .building_diolg_up {
+            padding-left: 50px;
+        }
+
+        .building_diolg_soan {
+            min-height: 2.5rem;
+            line-height: 2.5rem;
+            display: block;
+        }
+
+        /*2019/10/14 狸猫修改公海详情页面样式*/
+        .share_house_selling {
+            background-color: #FF5501;
+            color: #fff;
+            padding: 8px 2px 8px 5px;
+            text-align: center;
+            width: 95px;
+            font-size: 0.75rem;
+        }
+
+        .share_house_three_row {
+            padding: 10px 13px;
+        }
+
+        .share_house_pic {
+            line-height: 28px;
+            margin: 0;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        .share_house_info_test {
+            display: flex;
+            align-items: center;
+            min-height: 60px;
+        }
+
+        .share_house_selling_btn {
+            background-color: #FF5501;
+            color: #fff;
+            padding: 8px 0px 8px 0px;
+            text-align: center;
+            /*width: 90px;*/
+            font-size: 0.8rem;
+            cursor: pointer;
+        }
+
+        .el-table td, .el-table th.is-leaf {
+            text-align: center;
+        }
+
+        .index_info_titimg {
+            width: 50px;
+            height: 50px;
+            overflow: hidden;
+            border-radius: 50%;
+        }
+
+        .index_prop_tu {
+            background-color: rgba(111, 121, 111, .05);
+        }
+
+        /***/
+        .el-dialog {
+            width: 60%;
+        }
+
+        .person_dialog_visible {
+            width: 100%;
+            height: 100%;
+        }
+
+        .el-icon-picture-outline {
+            font-size: 50px;
+            margin-top: 170px;
+            color: #ddd;
+        }
+
+        .share_house_selling_btn {
+            display: inline-block;
+            height: 32px;
+            padding: 0 10px;
+            line-height: 30px;
+            font-size: 12px;
+            border-width: 1px;
+            border-style: solid;
+            border-radius: 4px;
+            box-sizing: border-box;
+            white-space: nowrap;
+            color: #fff;
+            background-color: #FF5501;
+            cursor: pointer;
+        }
+
+        /**2019/10/30*/
+        .el-tag.el-tag--success {
+            color: #fff;
+            background-color: #FF5501;
+            cursor: pointer;
+        }
+    </style>
+    <div id="app" v-hide>
+        <el-container>
+            <el-container v-loading="loading">
+                <el-header>
+                    <el-row>
+                        <el-col :span="5">
+                            <div class="grid-content bg-purple-dark">
+                                <div style="float: left;">
+
+                                    <!--<el-button type="primary" @click="handleForm(0)" icon="el-icon-plus" size="small">-->
+                                    <!--</el-button>-->
+
+                                    <!--修改按钮-->
+                                    <el-button type="danger" icon="el-icon-arrow-left" size="small" @click="open">
+                                    </el-button>
+                                </div>
+                            </div>
+                        </el-col>
+                        <el-col :span="19" style="float: right">
+                        </el-col>
+                    </el-row>
+                </el-header>
+                <el-main
+                        @row-contextmenu.prevent="openDetails"
+                        :data="tableData"
+                        style="margin-top: -15px;">
+
+                    <!--轮播图-->
+                    <template>
+                        <el-carousel class="index_prop_tu" trigger="click" height="400px" interval="3000">
+                            <el-carousel-item v-for="item in infoData.house_resold.show_images" :key="item"
+                                              style="text-align: center">
+                                <div class="demo-image__error">
+                                    <div class="block">
+                                        <el-image
+                                                :src="item.substr(0,4).toLowerCase() == 'http' ? item : utils.img_domain + item"
+                                                height="100%" width="auto">
+                                            <div slot="error" class="image-slot">
+                                                <i class="el-icon-picture-outline"></i>
+                                            </div>
+                                        </el-image>
+                                    </div>
+                                </div>
+                            </el-carousel-item>
+                        </el-carousel>
+                    </template>
+                    <!--第一部分信息-->
+                    <div class="" style="margin-top: 20px;">
+                        <el-row style="padding: 5px 0">
+                            <el-col :span="16">
+                                <div class="grid-content bg-purple ">
+                                    <span class="buliding_home_name">房源 :</span> {{infoData.house_resold.title ||
+                                    '暂无数据'}}
+                                </div>
+                            </el-col>
+                            <el-col :span="8">
+                                <div class="grid-content bg-purple-light"
+                                     v-if="t_house_type_id == 1 || t_house_type_id == 2 ? true : false"
+                                     style="color:red;">
+                                    <span style="font-size: 1.1rem;">{{infoData.house_resold.unit_price || '暂无数据'}}</span> 元
+                                    / <span>平方米</span>
+                                </div>
+                                <div class="grid-content bg-purple-light" v-if="t_house_type_id == 3 ? true : false"
+                                     style="color:red;">
+                                    <span style="font-size: 1.1rem;">{{infoData.house_resold.unit_price || '暂无数据'}}</span> 元
+                                    / <span>月</span>
+                                </div>
+                            </el-col>
+                        </el-row>
+
+                        <el-row :gutter="20" class="share_house_info_test" style="font-size: 0.9rem;">
+                            <el-col :span="16">
+                                <div class="grid-content bg-purple">
+                                    <i class="el-icon-location-outline"></i> {{infoData.house_resold.house_index_str || '暂无数据'}}
+                                </div>
+                            </el-col>
+                            <el-col :span="8">
+
+                            </el-col>
+                        </el-row>
+
+                        <el-row class="build_border_size bulid_newtim_right">
+                            <el-col :span="12" class="bulid_newtim_col">
+                                <div class="grid-content bg-purple">
+                                    房源发布时间: {{infoData.create_time || '暂无数据'}}
+                                </div>
+                                <div class="grid-content bg-purple" style="padding-top: 10px;">
+                                    最新更新时间: {{infoData.house_resold.update_time || '暂无数据'}}
+                                </div>
+
+                            </el-col>
+                            <el-col :span="12" class="bulid_newtim_col">
+                                <div class="grid-content bg-purple">
+                                    浏览次数: {{infoData.house_resold.is_share || '暂无数据'}}次
+                                </div>
+                            </el-col>
+                        </el-row>
+                    </div>
+
+
+                    <!--第二部分-->
+                    <div class="build_info_two">
+                        <div class="bulid_info_tow_tit">
+                            <span></span>
+                            <h3>房源简介</h3>
+                        </div>
+                        <div class="build_ifo_two_news">
+                            <el-row>
+                                <el-col :span="12">
+                                    <div class="grid-content bg-purple build_ifo_two_news_dv">
+                                        <span>房屋总价</span> <span>{{infoData.house_resold.price || '暂无数据'}}万</span>
+                                    </div>
+                                </el-col>
+                                <el-col :span="12">
+                                    <div class="grid-content bg-purple-light build_ifo_two_news_dv">
+                                        <span>所属财产</span>
+                                        <span>{{infoData.house_resold.house_property || '暂无数据'}}</span>
+                                    </div>
+                                </el-col>
+                            </el-row>
+                            <el-row>
+                                <el-col :span="12">
+                                    <div class="grid-content bg-purple build_ifo_two_news_dv">
+                                        <span>房屋户型</span>
+                                        <span>{{infoData.house_resold.house_config_param || '暂无数据'}}</span>
+                                    </div>
+                                </el-col>
+                                <el-col :span="12">
+                                    <div class="grid-content bg-purple-light build_ifo_two_news_dv">
+                                        <span>装修情况</span> <span>{{infoData.house_resold.decoration || '暂无数据'}}</span>
+                                    </div>
+                                </el-col>
+                            </el-row>
+                            <el-row>
+                                <el-col :span="12">
+                                    <div class="grid-content bg-purple build_ifo_two_news_dv">
+                                        <span>房本面积</span> <span>{{infoData.house_resold.house_size || '暂无数据'}} ㎡</span>
+                                    </div>
+                                </el-col>
+                                <el-col :span="12">
+                                    <div class="grid-content bg-purple-light build_ifo_two_news_dv">
+                                        <span>房源产权</span>
+                                        <span>{{infoData.house_resold.house_property || '暂无数据'}}</span>
+                                    </div>
+                                </el-col>
+                            </el-row>
+                            <el-row>
+                                <el-col :span="12">
+                                    <div class="grid-content bg-purple build_ifo_two_news_dv">
+                                        <span>所在楼层</span> <span>{{infoData.house_resold.house_floor || '暂无数据'}}层</span>
+                                    </div>
+                                </el-col>
+                                <el-col :span="12">
+                                    <div class="grid-content bg-purple-light build_ifo_two_news_dv">
+                                        <span>有无电梯</span> <span>{{infoData.house_resold.elevator || '暂无数据'}}</span>
+                                    </div>
+                                </el-col>
+                            </el-row>
+                            <el-row>
+                                <el-col :span="12">
+                                    <div class="grid-content bg-purple build_ifo_two_news_dv">
+                                        <span>房源特色</span> <span>{{infoData.house_resold.feature || '暂无数据'}}</span>
+                                    </div>
+                                </el-col>
+                                <el-col :span="12">
+                                    <div class="grid-content bg-purple-light build_ifo_two_news_dv">
+
+                                    </div>
+                                </el-col>
+                            </el-row>
+                        </div>
+                    </div>
+
+                    <!--第三部分 楼盘简介及配置描述-->
+                    <div class="build_info_two">
+                        <div class="bulid_info_tow_tit">
+                            <span></span>
+                            <h3>房源配置及描述</h3>
+                        </div>
+                        <el-row :gutter="20" class="share_house_three_row">
+                            <el-col :span="4">
+                                <div class="grid-content bg-purple">
+
+                                    <div class="share_house_selling">
+                                        核心卖点 <i class="el-icon-caret-top"></i>
+                                    </div>
+
+                                </div>
+                            </el-col>
+                            <el-col :span="20">
+                                <div class="grid-content bg-purple">
+                                    <p class="share_house_pic">
+                                        [装修风格] {{infoData.house_resold.style || '暂无数据'}} <br>
+                                        [房源特色] {{infoData.house_resold.feature || '暂无数据'}} <br>
+                                        [房源装修] {{infoData.house_resold.decoration || '暂无数据'}}
+                                    </p>
+                                </div>
+                            </el-col>
+
+                        </el-row>
+                        <el-row :gutter="20" class="share_house_three_row">
+                            <el-col :span="4">
+                                <div class="grid-content bg-purple">
+
+                                    <div class="share_house_selling">
+                                        服务介绍 <i class="el-icon-caret-top"></i>
+                                    </div>
+
+                                </div>
+                            </el-col>
+                            <el-col :span="20">
+                                <div class="grid-content bg-purple">
+                                    <p class="share_house_pic">
+                                        房妈妈主要从事专业二手房买卖，房屋租赁、新楼盘代理等业务。<br>
+                                        房妈妈是宿迁市知名房产代理机构，“专业精神值得信任房妈妈，房妈妈真心为您服务！<br>
+                                        特别提醒：网络看百套、不如实地看一套、热诚期待您的来电、来电即可预约看房！<br>
+                                        信赖房妈妈、愿给您一个温暖的小窝。
+                                    </p>
+                                </div>
+                            </el-col>
+
+                        </el-row>
+
+                    </div>
+                </el-main>
+
+
+            </el-container>
+        </el-container>
+
+
+        <!--预览图片-->
+        <el-dialog :visible.sync="dialogVisible">
+            <!--<img width="100%" :src="ite" alt="">-->
+            <img class="person_dialog_visible"
+                 src="https://ss2.bdstatic.com/70cFvnSh_Q1YnxGkpoWK1HF6hhy/it/u=2421795609,2881084263&fm=26&gp=0.jpg"
+                 alt="">
+        </el-dialog>
+
+    </div>
+</block>
+<block name="js">
+    <!--2019/10/11 狸猫新增地图js引入-->
+
+    <script type="text/javascript">
+        let user_data = JSON.parse('{:cache("user_data")}');
+        //house_share_id
+        let url = "{:input('real_num')}";
+        //house_type_id
+        let house_type_i = "{:input('aa')}";
+        if (url == "") {
+            url = "{:input('house_share_id')}";
+            // alert(url)
+        }
+        if (house_type_i == "") {
+            house_type_i = "{:input('house_type_id')}";
+            // alert(house_type_i)
+        }
+        var myvue = new Vue({
+            el: '#app',
+            data: {
+                fileLists: '',
+                infoData: {
+                    house_resold: {},
+                },
+                tableData: [],
+                lists: [],
+                value: '',
+                search: '',
+                input2: '',
+                show: false,
+                drawer: false,
+                direction: 'btt',
+                formVisible: false,
+                activeName: 'one',
+                activeIndex: '1',
+                activeIndex2: '1',
+                customer: {id: ""},
+                customer_id: 0,
+                formDom: {},
+                form: {
+                    name: '',
+                    region: '',
+                    date1: '',
+                    date2: '',
+                    delivery: false,
+                    type: [],
+                    resource: '',
+                    desc: ''
+                },
+                loading: false,
+                customerFollows: [],
+                followOption: {},
+                tabIndex: 0,
+                formIndex: 0,
+                header: {user_token: user_data.user_token.user_token, store_id: user_data.store_user_info.store_id},
+                page: 1,
+                nextBtn: true,
+                formLabelWidth: '120px',
+                dialogImageUrl: '',
+                dialogVisible: false,
+                videoVisible: false,
+                videosrc: '',
+                share_house_btn_agree: false,
+                share_house_btn_ok: false,
+                union_status: '',
+                t_house_type_id: house_type_i,
+            },
+            created() {
+                this.getCustomers();
+            },
+            methods: {
+                getCustomers() {
+                    // alert(url);
+                    // alert(this.t_house_type_id);
+                    this.loading = true;
+                    let data = Object.assign({
+                        url: 'extend/manager/house_share/myShareInfo',
+                        page: this.page,
+                        house_share_id: url,
+                        house_type_id: this.t_house_type_id,
+                    }, this.header);
+                    //console.log(data); 这个console是获取活的usertoken
+                    utils.ajax({
+                        data: data,
+                        success: (res) => {
+                            this.loading = false;
+                            // console.log(JSON.stringify(res.data.data));
+                            if (res.data.code == -2) {
+                                this.$message.error(res.data.msg);
+                                return false;
+                            } else if (res.data.code == 1) {
+                                if (this.t_house_type_id == 1) {
+                                    res.data.data.house_resold = res.data.data.info;
+                                    res.data.data.house_resold.show_images = res.data.data.house_resold.show_images.split(',');
+                                    this.infoData = res.data.data;
+                                    this.infoData.house_resold.unit_price = this.infoData.house_resold.price;
+                                } else if (this.t_house_type_id == 2) {
+                                    res.data.data.house_resold = res.data.data.info;
+                                    res.data.data.house_resold.show_images = res.data.data.house_resold.show_images.split(',');
+                                    this.infoData = res.data.data;
+                                } else if (this.t_house_type_id == 3) {
+                                    res.data.data.house_resold = res.data.data.info;
+                                    res.data.data.house_resold.show_images = res.data.data.house_resold.show_images.split(',');
+                                    this.infoData = res.data.data;
+                                    this.infoData.address = res.data.data.house_resold.address;
+                                    this.infoData.house_resold.unit_price = this.infoData.house_resold.price;
+                                }
+
+                                console.log(this.infoData);
+                                if (this.infoData.house_resold.elevator == 1) {
+                                    this.infoData.house_resold.elevator = '有';
+                                } else {
+                                    this.infoData.house_resold.elevator = '无';
+                                }
+                                //关于经纪人头像显示问题
+                                // let order_house_share = res.data.data.order_house_share;
+
+
+                            }
+                            // console.log(data);
+                        },
+                        error: function (res) {
+                            console.log('error' + res)
+                        }
+                    })
+
+                },
+                handleSelect(key, keyPath) {
+                    console.log(key, keyPath);
+                },
+                //点击编辑图标显示弹窗修改内容
+                open() {
+                    window.history.go(-1);
+                },
+                openDetails(row, column, event) {
+                    event.preventDefault();
+                    row.id = row.id || 0;
+                    if (row.id == 0) {
+                        this.$message.error('数据异常');
+                        return;
+                    }
+                    // this.show = this.show ? false : true;
+                    this.show = true;
+                    var menu = document.querySelector("#menu");
+                    menu.style.left = event.clientX + 'px';
+                    menu.style.top = event.clientY + 'px';
+                },
+                handledbClick(row) {
+                    this.union_status = row.id;
+                    console.log(this.union_status);
+                },
+                showDialog() {
+                    this.dialogFormVisible = true;
+                },
+                handleClick(tab, event) {
+                    // 绑定tab的index值（下标）
+                    this.tabIndex = tab.index;
+                    this.datasPage = 1;
+                    this.getTabDataList();
+                },
+                // 显示表单
+                onSubmit() {
+                    this.formDom.loading = true;
+                },
+                getTabDataList() {
+                },
+                //点击请求合作显示
+                shar_btn() {
+                    //返回数据接口
+                    let data = Object.assign({
+                        url: 'extend/manager/order_house_share/finish',
+                        // page: this.page,
+                        user_token: user_data.user_token.user_token,
+                        id: this.union_status
+                    }, this.header);
+
+                    utils.ajax({
+                        data: data,
+                        success: (res) => {
+
+                            console.log(res);
+                            if (res.data.code == -2) {
+
+                                this.$message.error(res.data.msg);
+                                return false;
+                            } else if (res.data.code == 1) {
+                                // alert(res.data.data.address);
+                                this.$message.success(res.data.msg);
+                                this.getCustomers();
+                            } else if (res.data.code == 0) {
+                                this.$message.error(res.data.msg);
+                                return false;
+                            }
+                            // console.log(data);
+                        },
+                        error: function (res) {
+                            console.log('error' + res)
+                        }
+                    })
+                },
+                //点击经纪人列表中的同意合作功能
+                shar_btn_agree(event) {
+                    //返回数据接口
+                    let data = Object.assign({
+                        url: 'extend/manager/order_house_share/agree',
+                        // page: this.page,
+                        user_token: user_data.user_token.user_token,
+                        id: this.union_status
+                    }, this.header);
+                    utils.ajax({
+                        data: data,
+                        success: (res) => {
+                            // console.log(res.data);
+                            if (res.data.code == -2) {
+                                this.$message.error(res.data.msg);
+                                return false;
+                            } else if (res.data.code == 1) {
+                                // alert(res.data.data.address);
+                                this.$message.success(res.data.msg);
+                                this.dialogFormVisible = false;
+                                this.getCustomers();
+                            } else if (res.data.code == 0) {
+                                this.$message.error(res.data.msg);
+                                return false;
+                            }
+                            // console.log(data);
+                        },
+                        error: function (res) {
+                            console.log('error' + res)
+                        }
+                    })
+
+                },
+                preview() {
+                    this.dialogVisible = true;
+                },
+                filterTag(value, row) {
+                    return row.status_text === value;
+                },
+
+            },
+            // 过滤器
+            filters: {
+                statusFilterType(status) {
+                    const statusMap = {'1': '有意向', '2': '看房', '3': '前订购协议', '4': '签合同', '5': '付款'};
+                    return statusMap[status];
+                },
+            }
+        });
+        //关闭右键菜单
+        window.onclick = function (e) {
+            myvue.$data.show = false;
+        }
+
+    </script>
+</block>

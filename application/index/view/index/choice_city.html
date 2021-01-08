@@ -1,0 +1,245 @@
+<extend name="base/common"/>
+
+<block name="body">
+    <style>
+        .el-header {
+            color: #333;
+            line-height: 60px;
+            text-align: right;
+            font-size: 12px
+        }
+
+        .el-aside {
+            color: #333;
+        }
+
+
+        #menu {
+            position: absolute;
+        }
+
+        .el-menu {
+            box-shadow: 0 0 5px #ddd;
+            z-index: 99;
+            border: 1px solid #ddd;
+        }
+
+        .el-menu-item {
+            color: #555;
+            border-bottom: 1px solid #f3f3f3;
+        }
+
+        .el-menu-item:focus, .el-menu-item:hover {
+            background-color: #e6e9ed;
+            color: #ff5100
+        }
+
+        a {
+            text-decoration: none
+        }
+
+        .el-menu li {
+            height: 35px;
+            line-height: 35px;
+        }
+        /*2020/1/21*/
+        .el-button {
+            margin: 5px !important;
+            width: 84px;
+            overflow: hidden;
+            /*color: #ff5100;*/
+            /*border: 1px solid #ff5100;*/
+        }
+        .el-button>span{
+            display: block;
+            overflow: hidden;
+        }
+        .city_firist{
+           padding: 7px 11px;
+            /*color: #ff2600;*/
+        }
+        .el-tabs__content{
+            padding: 10px 0;
+        }
+
+    </style>
+    <div id="app" v-hide>
+        <el-container>
+            <el-container v-loading="loading">
+                <el-header>
+                    <el-row>
+                        <el-col :span="5">
+                            <div class="grid-content bg-purple-dark">
+                                <div style="float: left;">
+
+                                    <!--<el-button type="primary" @click="handleForm(0)" icon="el-icon-plus" size="small">-->
+                                    <!--</el-button>-->
+
+                                    <!--修改按钮-->
+                                    <el-button type="danger" icon="el-icon-arrow-left" size="small" @click="open">
+                                    </el-button>
+                                </div>
+                            </div>
+                        </el-col>
+                    </el-row>
+                </el-header>
+                <el-main style="margin-top: -15px;">
+                    <div style="text-align: right;">
+                        <el-button type="primary" @click="city_right_province" v-show="next_">{{city_right[0]}}</el-button>
+                        <el-button type="primary" @click="city_right_s_city" v-show="next__">{{city_right[1]}}</el-button>
+                    </div>
+                    <template>
+                        <el-tabs v-model="activeName" @tab-click="handleClick">
+
+                            <el-tab-pane label="" name="first">
+                                    <span v-for="i in character">
+                                        <div>
+                                             <el-divider content-position="left">{{i}}</el-divider>
+                                        </div>
+<!--                                        <div class="city_firist">{{i}}</div>-->
+                                        <span v-for="item in city" v-if="item.initial== i">
+                                                <el-button  @click="next_city(item.id , item.name)">{{item.name}}
+                                                </el-button>
+                                        </span>
+                                        <br/>
+                                    </span>
+
+                            </el-tab-pane>
+                            <!--<el-tab-pane label="城市" name="second">配置管理</el-tab-pane>-->
+                            <!--<el-tab-pane label="区县" name="third">角色管理</el-tab-pane>-->
+                        </el-tabs>
+                    </template>
+                </el-main>
+            </el-container>
+        </el-container>
+    </div>
+</block>
+<block name="js">
+    <script type="text/javascript">
+        let user_data = JSON.parse('{:cache("user_data")}');
+        let clickTimer = null;
+
+        // let city = arrAll;
+        var myvue = new Vue({
+            el: '#app',
+            data: {
+                city_right: [
+                    // '省','市'
+                ],
+                city_right_s: 0,
+                loading: false,
+                value: '',
+                input: '',
+                search: '',
+                datasNextBtn: true,
+                header: {user_token: user_data.user_token.user_token, store_id: user_data.store_user_info.store_id},
+                activeName: 'first',
+                level: 1,
+                pid: 0,
+                //省份
+                province: [],
+                // 城市
+                city: [],
+                // 区县
+                county: [],
+                next_: false,
+                next__: false,
+                city_name: '',
+
+                character:[]
+            },
+            created() {
+                this.get_city();
+            },
+            methods: {
+                //点击省
+                city_right_province() {
+                    this.level = 1;
+                    this.pid = 0;
+                    this.get_city();
+                    this.next__ = false;
+                },
+                //点击市
+                city_right_s_city() {
+                    this.level = 2;
+                    this.pid = this.city_right_s;
+                    this.get_city();
+                },
+                //跳转首页
+                act_btn() {
+                    window.location.href = '{:url("index")}?city=' + this.pid + ',' + this.city_name;
+                },
+                next_city(e, i) {
+                    this.pid = e;
+                    this.city_name = i;
+                    if (this.level == 1) {
+                        this.level = 2;
+                        this.city_right_s = e;
+                        this.city_right[0] = i;
+                        this.next_ = true;
+                    } else if (this.level == 2) {
+                        this.act_btn();
+                        // this.level = 3;
+                        // this.city_right[1] = i;
+                        // this.next__ = true;
+                    } else {
+                    }
+                    this.get_city();
+                },
+                get_city() {
+                    this.loading = true;
+                    let data = Object.assign({
+                        url: 'extend/manager/house_share/getCity',
+                        level: this.level,
+                        pid: this.pid,
+                    }, this.header);
+                    utils.ajax({
+                        data: data,
+                        success: (res) => {
+                            this.loading = false;
+                            if (res.data.code == -2) {
+                                this.$message.error(res.data.msg);
+                                return false;
+                            } else if (res.data.code == 1) {
+                                let data = res.data.data;
+                                for(let i in data){
+                                    data[i].initial = data[i].initial.substring(0,1).toUpperCase() || '';
+                                }
+                                //2020/1/21 狸猫改的城市
+                                let list = [];
+                                let lists = data;
+                                for (let s in lists) {
+                                    // 去掉重复
+                                    if (list.indexOf(lists[s].initial) == -1) {
+                                        list.push(lists[s].initial);
+                                    }
+                                }
+                                this.character = list.sort();
+                                this.city = data;
+                                console.log(this.city);
+                                console.log(this.character);
+                                if (this.city == '') {
+                                    this.act_btn();
+                                }
+                                // console.log(JSON.stringify((this.city)));
+                            }
+                        },
+                        error: function (res) {
+                            console.log('error' + res);
+                        }
+                    });
+
+                },
+                //点击编辑图标显示弹窗修改内容
+                open() {
+                    window.history.back(-1);
+                },
+                //省市区切换方法
+                handleClick(tab, event) {
+                    console.log(tab, event);
+                },
+
+            },
+        });
+    </script>
+</block>

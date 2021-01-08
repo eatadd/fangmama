@@ -1,0 +1,382 @@
+<extend name="base/common" />
+
+<block name="body">
+    <style>
+        .el-header {
+            color: #333;
+            line-height: 60px;
+            text-align: right;
+            font-size: 12px
+        }
+
+        .el-aside {
+            color: #333;
+        }
+
+        #menu {
+            position: absolute;
+        }
+
+        .el-menu {
+            box-shadow: 0 0 5px #ddd;
+            z-index: 99;
+            border: 1px solid #ddd;
+        }
+
+        .el-menu-item {
+            color: #555;
+            border-bottom: 1px solid #f3f3f3;
+        }
+
+        .el-menu-item:focus,
+        .el-menu-item:hover {
+            background-color: #e6e9ed;
+            color: #ff5100
+        }
+
+        a {
+            text-decoration: none
+        }
+
+        .el-menu li {
+            height: 35px;
+            line-height: 35px;
+        }
+
+    </style>
+    <div id="app" v-hide>
+        <el-container>
+            <el-container v-loading="loading">
+                <el-header height="0px">
+
+                </el-header>
+                <el-main style="margin-top: -15px;">
+                    <el-table @row-contextmenu="openDetails" @row-dblclick="row_clicks" :data="tableData"
+                        style="width: 100%;border-top:1px solid #eee;">
+<!--                            复选框-->
+<!--                        <el-table-column type="selection" width="55">-->
+<!--                        </el-table-column>-->
+                        <el-table-column show-overflow-tooltip label="名称" prop="name" >
+                        </el-table-column>
+                        <el-table-column show-overflow-tooltip label="联系方式" prop="mobile">
+                        </el-table-column>
+                        <el-table-column show-overflow-tooltip label="性别" prop="sex_str">
+                        </el-table-column>
+                        <!-- <el-table-column
+                            label="需求内容"
+                            width="180">
+                            <template slot-scope="scope">
+                               <p v-for="(v,k) in scope.row.need" :key="k">{{v.house_config}}</p>
+                            </template>
+                        </el-table-column> -->
+                        <el-table-column show-overflow-tooltip label="类型" prop="type_str">
+
+                        </el-table-column>
+                        <el-table-column show-overflow-tooltip label="备注" prop="remark">
+                        </el-table-column>
+                    </el-table>
+                </el-main>
+                <el-footer style="text-align: center">
+                    <!-- <el-pagination style="text-align: center" hide-on-single-page background layout="prev, pager, next"
+                        :total="50">
+                    </el-pagination> -->
+                    <el-button type="text" icon="el-icon-arrow-left" size="medium" :disabled="page == 1"
+                        @click="prevPage">上一页</el-button>
+                    <el-button type="text" size="medium" @click="nextPage" :disabled="nextBtn">下一页<i
+                            class="el-icon-arrow-right el-icon--right"></i></el-button>
+
+                </el-footer>
+            </el-container>
+        </el-container>
+        <transition name="el-zoom-in-top">
+            <div id="menu" v-show="show">
+                <el-row class="tac">
+                    <el-col>
+                        <el-menu active-text-color="#000">
+                            <!-- <template v-for="menuItems in menuItem">
+                                <a :href="menuItems.src">
+                                    <el-menu-item>
+                                        <span slot="title">{{menuItems.title}}</span>
+                                    </el-menu-item>
+                                </a>
+                            </template> -->
+
+                        </el-menu>
+                    </el-col>
+                </el-row>
+            </div>
+        </transition>
+        <el-drawer title="详细信息" :visible.sync="drawer" :direction="direction">
+            <span>我来啦!</span>
+        </el-drawer>
+        <el-dialog title="签约记录" :visible.sync="dialogFormVisible" width="70%">
+            <template>
+                <el-tabs v-model="activeName" @tab-click="handleClick" v-loading="loading">
+                    <el-tab-pane v-for="(v,k) in tabs" :label="v.label" :name="v.name" :key="k">
+                        <el-table @row-contextmenu="openDetails" :data="lists"
+                            style="width: 100%;border-top:1px solid #eee">
+                            <!-- <el-table-column type="selection" width="55">
+                                </el-table-column> -->
+                            <el-table-column v-for="(v1,k1) in v.table" show-overflow-tooltip :label="v1.label"
+                                :prop="v1.prop">
+                            </el-table-column>
+                        </el-table>
+
+                    </el-tab-pane>
+                    <div v-if="tabIndex != 0" style="text-align: center">
+                        <el-button type="text" icon="el-icon-arrow-left" size="medium" :disabled="datasPage == 1"
+                            @click="datasPrevPage">上一页</el-button>
+                        <el-button type="text" size="medium" @click="datasNextPage" :disabled="datasNextBtn">下一页<i
+                                class="el-icon-arrow-right el-icon--right"></i></el-button>
+
+                    </div>
+                </el-tabs>
+
+            </template>
+
+        </el-dialog>
+
+    </div>
+</block>
+<block name="js">
+    <script type="text/javascript">
+        let clickTimer = null;
+        let user_data = JSON.parse('{:cache("user_data")}');
+        var myvue = new Vue({
+            el: '#app',
+            data: {
+                tableData: [],
+                lists: [],
+                value: '',
+                search: '',
+                input2: '',
+                show: false,
+                drawer: false,
+                direction: 'btt',
+                dialogFormVisible: false,
+                formVisible: false,
+                activeName: 'one',
+                activeIndex: '1',
+                activeIndex2: '1',
+                customer: { id: "" },
+                loading: false,
+                customerFollows: [],
+                followOption: {},
+                tabs: [
+                    {
+                        label: '签约记录',   // 用户签约记录
+                        name: 'one',
+                        table: [
+                            {
+                                label: '签约房源',
+                                prop: 'house_id_title',
+                            },
+                            {
+                                label: "签约金额",
+                                prop: 'money',
+                            },
+                            {
+                                label: '签约客源',
+                                prop: 'customer_info.name'
+                            },
+                            {
+                                label: '签约进度',
+                                prop: 'option.title'
+                            },
+                            {
+                                label: '经纪人',
+                                prop: 'store_user_name',
+                            },
+                            {
+                                label: '签约时间',
+                                prop: 'create_time',
+                            },
+                        ],
+                        query: {
+                            url: 'extend/manager/houseSign/listByCustomer',
+                        },
+                    }
+                ],
+                tabIndex: 0,
+                formIndex: 0,
+                datas: [],
+                datasPage: 1,
+                datasNextBtn: true,
+                header: { user_token: user_data.user_token.user_token, store_id: user_data.store_user_info.store_id },
+                page: 1,
+                nextBtn: true
+            },
+            created() {
+                this.getCustomers();
+            },
+            methods: {
+                getCustomers() {
+                    this.loading = true;
+                    let data = Object.assign({
+                        url: 'extend/manager/HouseSign/SignCustomerList',
+                        page: this.page,
+                    }, this.header);
+                    console.log(data);
+                    utils.ajax({
+                        data: data,
+                        success: (res) => {
+                            this.loading = false;
+                            console.log(res.data);
+                            if (res.data.code == -2) {
+                                this.$message.error(res.data.msg);
+                                return false;
+                            }
+                            let typeList = { '1': '买房', '2': '卖房', '3': '租房' }
+                            let sexList = { '1': '男', '2': '女' }
+                            let data = res.data.data;
+                            for (let key in data) {
+                                let type = data[key].type;
+
+                                if (typeList.hasOwnProperty(type)) {
+                                    data[key].type_str = typeList[type];
+                                } else {
+                                    data[key].type_str = type;
+                                }
+
+                                data[key].sex_str = sexList[data[key].sex] ? sexList[data[key].sex] : '';
+                            }
+                            // console.log(data);
+                            this.tableData = data;
+                            this.datas = this.tableData;
+                            console.log(data.length);
+                            this.nextBtn = data.length == 10 ? false : true;
+                        },
+                        error: function (res) {
+                            console.log('error' + res)
+                        }
+                    })
+                },
+                prevPage() {
+                    this.page--;
+                    this.getCustomers();
+                },
+                nextPage() {
+                    this.page++;
+                    this.getCustomers();
+                },
+                datasPrevPage() {
+                    this.datasPage--;
+                    this.getTabDataList();
+                },
+                datasNextPage() {
+                    this.datasPage++;
+                    this.getTabDataList();
+                },
+                handleSelect(key, keyPath) {
+                    console.log(key, keyPath);
+                },
+                open() {
+                    this.$confirm('此操作将永久删除该文件, 是否继续?', '提示', {
+                        confirmButtonText: '确定',
+                        cancelButtonText: '取消',
+                        type: 'warning'
+                    }).then(() => {
+                        this.$message({
+                            type: 'success',
+                            message: '删除成功!'
+                        });
+                    }).catch(() => {
+                        this.$message({
+                            type: 'info',
+                            message: '已取消删除'
+                        });
+                    });
+                },
+                openDetails(row, column, event) {
+                    event.preventDefault();
+                    row.id = row.id || 0;
+                    if (row.id == 0) {
+                        this.$message.error('数据异常');
+                        return;
+                    }
+                    // this.show = this.show ? false : true;
+                    this.show = true;
+                    var menu = document.querySelector("#menu");
+                    menu.style.left = event.clientX + 'px';
+                    menu.style.top = event.clientY + 'px';
+                },
+                // row_click(){
+                //     if (clickTimer) {
+                //         window.clearTimeout(clickTimer);
+                //         clickTimer = null;
+                //     }
+                //     clickTimer = window.setTimeout(function() {
+                //         // your click process code here
+                //         myvue.$data.drawer = true;
+                //     }, 200);
+                // },
+                row_clicks(row, event) {
+                    if (clickTimer) {
+                        window.clearTimeout(clickTimer);
+                        clickTimer = null;
+                    }
+                    // 确定选中的客源
+                    let customer = Object.assign({}, row);
+                    this.customer = customer;
+                    // your click process code here
+                    this.dialogFormVisible = true;
+
+                    this.getTabDataList();
+                },
+                showDialog() {
+                    this.dialogFormVisible = true;
+                },
+                handleClick(tab, event) {
+                    // 绑定tab的index值（下标）
+                    this.tabIndex = tab.index;
+                    this.datasPage = 1;
+                    this.getTabDataList();
+
+                },
+                getTabDataList() {
+                    this.lists = [];
+                    this.loading = true;
+                    let query = {};
+                    //  如果当前选中的是 客源跟进 或者是 签约记录
+                    query = { customer_id: this.customer.id };
+
+                    //  房源列表暂时不需要 第二个源对象   所以为 空 query = {}
+
+                    let data = Object.assign({ 'page': this.datasPage },
+                        this.tabs[this.tabIndex].query, query, this.header);
+                    console.log(data);
+                    utils.ajax({
+                        data: data,
+                        success: (res) => {
+                            console.log(res.data);
+                            this.loading = false;  // 关闭加载动画
+                            let count = 0
+                            if (res.data.code == 1) {
+                                let data = res.data.data;
+                                this.lists = data;
+                                count = data.length;
+                            }
+                            this.datasNextBtn = count >= 10 ? false : true;
+
+
+                        },
+                        error: function (res) {
+                            console.log('error' + res)
+                        }
+                    })
+                },
+            },
+            // 过滤器
+            filters: {
+                statusFilterType(status) {
+                    const statusMap = { '1': '有意向', '2': '看房', '3': '前订购协议', '4': '签合同', '5': '付款' };
+                    return statusMap[status];
+                },
+            }
+        });
+        //关闭右键菜单
+        window.onclick = function (e) {
+            myvue.$data.show = false;
+        }
+    </script>
+</block>

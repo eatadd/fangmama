@@ -1,0 +1,348 @@
+<extend name="base/common"/>
+
+<block name="body">
+    <style>
+        .el-header {
+            color: #333;
+            line-height: 60px;
+            text-align: right;
+            font-size: 12px
+        }
+
+        .el-aside {
+            color: #333;
+        }
+
+        #menu {
+            position: absolute;
+        }
+
+        .el-menu {
+            box-shadow: 0 0 5px #ddd;
+            z-index: 99;
+            border: 1px solid #ddd;
+        }
+
+        .el-menu-item {
+            color: #555;
+            border-bottom: 1px solid #f3f3f3;
+        }
+
+        .el-menu-item:focus, .el-menu-item:hover {
+            background-color: #e6e9ed;
+            color: #ff5100
+        }
+
+        a {
+            text-decoration: none
+        }
+
+        .el-menu li {
+            height: 35px;
+            line-height: 35px;
+        }
+    </style>
+    <div id="app" v-hide>
+        <el-container>
+            <el-container>
+                <!--头部-->
+                <el-header
+                        height="60px">
+                    <el-row>
+                        <el-col :span="5">
+                            <div class="grid-content bg-purple-dark">
+                                <div style="float: left;">
+                                    <a v-show="add_btn" id="historical_list">
+                                        <el-button type="primary" icon="el-icon-upload2" size="small"
+                                                   @click="historical_list">
+
+                                        </el-button>
+                                    </a>
+                                </div>
+                            </div>
+                        </el-col>
+<!--                        <el-col :span="19" style="float: right">-->
+<!--                            <el-row>-->
+<!--                                <el-col :span="24">-->
+<!--                                    <div style="float: right;">-->
+<!--                                        <el-input-->
+<!--                                                size="small"-->
+<!--                                                placeholder="请输入搜索内容"-->
+<!--                                                prefix-icon="el-icon-search"-->
+<!--                                                v-model="search">-->
+<!--                                        </el-input>-->
+<!--                                    </div>-->
+<!--                                </el-col>-->
+<!--                            </el-row>-->
+<!--                        </el-col>-->
+                    </el-row>
+                </el-header>
+
+                <!--正文-->
+                <el-main style="margin-top: -15px;">
+                    <el-table
+                            @row-contextmenu.prevent="openDetails"
+                            @row-dblclick="row_clicks"
+                            @row-click="row_click"
+                            :data="filteredArticles"
+                            style="width: 100%;border-top:1px solid #eee">
+                        <el-table-column type="selection" width="55">
+                        </el-table-column>
+
+                        <el-table-column
+                                show-overflow-tooltip
+                                label="客户头像"
+                                prop="logo"
+                        >
+                            <template scope="scope">
+                                <img :src="scope.row.logo" width="40" height="40" class="logo"/>
+                            </template>
+
+                        </el-table-column>
+
+                        <el-table-column
+                                show-overflow-tooltip
+                                label="客户昵称"
+                                prop="nickname">
+                        </el-table-column>
+                        <el-table-column
+                                show-overflow-tooltip
+                                label="联系方式"
+                                prop="mobile">
+                        </el-table-column>
+                        <el-table-column
+                                show-overflow-tooltip
+                                label="服务评价"
+                                prop="tag">
+                        </el-table-column>
+                        <el-table-column
+                                show-overflow-tooltip
+                                label="评价时间"
+                                prop="join_time">
+                        </el-table-column>
+                    </el-table>
+                </el-main>
+
+                <!--底部-->
+                <el-footer style="text-align: center">
+                    <!--<el-pagination style="text-align: center" hide-on-single-page backgroundlayout="prev, pager, next"-->
+                                   <!--:total="50">-->
+                    <!--</el-pagination>-->
+                    <el-button type="text" icon="el-icon-arrow-left" size="medium" :disabled="disabled_downBtn"
+                               @click="prevPage">上一页</el-button>
+                    <el-button type="text" size="medium" @click="nextPage" :disabled="nextBtn">下一页<i
+                            class="el-icon-arrow-right el-icon--right"></i></el-button>
+                </el-footer>
+
+            </el-container>
+
+        </el-container>
+    </div>
+</block>
+<block name="js">
+    <script type="text/javascript">
+        let user_data = JSON.parse('{:cache("user_data")}');
+        let clickTimer = null;
+        var myvue = new Vue({
+            el: '#app',
+            data: {
+                tableData: [],
+                tableData_new: [],
+                value: '',
+                search: '',
+                input2: '',
+                show: false,
+                add_btn: true,
+                del_btn: true,
+                drawer: false,
+                direction: 'btt',
+                dialogFormVisible: false,
+                activeName: 'one',
+                page: 1,
+                page_size: 8,
+                disabled_downBtn:true,
+                nextBtn: false,
+                header: {user_token: user_data.user_token.user_token, store_id: user_data.store_user_info.store_id}
+            },
+            created() {
+                this.getCustomers();
+            },
+            methods: {
+                //获取数据
+                getCustomers() {
+                    this.loading = true;
+                    let data = Object.assign({
+                        url: 'extend/manager/StoreManager/history',
+                        page: this.page,
+                    }, this.header);
+                    console.log(data);
+                    utils.ajax({
+                        data: data,
+                        success: (res) => {
+                            console.log(res);
+                            if (res.error == -2) {
+                                this.$message.error(res.message);
+                                return false;
+                            } else {
+                                let data = res.data.data;
+                                this.tableData = data;//赋值。把接口中的数据赋值到tableData数组中
+                                let tableData_new = this.tableData_new;
+                                for(let i =0;i<this.tableData.length; i++){
+                                    tableData_new.push({ 'nickname' :this.tableData[i].nickname ,'join_time': this.tableData[i].join_time ,'logo': this.tableData[i].logo ,'mobile': this.tableData[i].mobile , 'tag': this.tableData[i].tag ,  });
+                                }
+                                this.nextBtn = data.length == 10 ? false : true;
+                                //页面加载 判断页面数据是否是八个，以此 是否翻页
+                                if (this.tableData.length < 8) {
+                                    this.nextBtn = true;
+                                }
+                            }
+                        },
+                        error:function (res) {
+                                console.log('error' + res)
+                            }
+                    })
+
+                },
+                //点击删除按钮执行的显示
+                open() {
+                    this.$confirm('此操作将永久删除该文件, 是否继续?', '提示', {
+                        confirmButtonText: '确定',
+                        cancelButtonText: '取消',
+                        type: 'warning'
+                    }).then(() => {
+                        this.$message({
+                            type: 'success',
+                            message: '删除成功!'
+                        });
+                    }).catch(() => {
+                        this.$message({
+                            type: 'info',
+                            message: '已取消删除'
+                        });
+                    });
+                },
+                openDetails(row, column, event) {
+                    event.preventDefault();
+                    row.id = row.id || 0;
+                    if (row.id == 0) {
+                        this.$message.error('数据异常');
+                        return;
+                    }
+                    // this.show = this.show ? false : true;
+                    this.show = true;
+                    var menu = document.querySelector("#menu");
+                    menu.style.left = event.clientX + 'px';
+                    menu.style.top = event.clientY + 'px';
+                },
+                //单击列表后的方法
+                row_click() {
+                    if (clickTimer) {
+                        window.clearTimeout(clickTimer);
+                        clickTimer = null;
+                    }
+                    clickTimer = window.setTimeout(function () {
+                        // your click process code here
+                        myvue.$data.drawer = true;
+                    }, 200);
+                },
+                //双击列表后显示的方法
+                row_clicks() {
+                    if (clickTimer) {
+                        window.clearTimeout(clickTimer);
+                        clickTimer = null;
+                    }
+                    // your click process code here
+                    this.dialogFormVisible = true;
+                },
+                //双击后显示的弹框中的内容点击后的事件
+                handleClick(tab, event) {
+                    console.log(tab, event);
+                },
+                //点击按钮导出数据到execl表格中
+                historical_list() {
+                    var tableData_new = this.tableData_new;
+                    //列标题，逗号隔开，每一个逗号就是隔开一个单元格
+                    let str = `客户昵称,加入时间,客户头像,联系方式,服务评价\n`;
+                    //增加\t为了不让表格显示科学计数法或者其他格式
+                    for (let i = 0; i < tableData_new.length; i++) {
+                        for (let item in tableData_new[i]) {
+                            str += `${tableData_new[i][item] + '\t'},`;
+                        }
+                        str += '\n';
+                    }
+                    //encodeURIComponent解决中文乱码
+                    let uri = 'data:text/csv;charset=utf-8,\ufeff' + encodeURIComponent(str);
+                    //通过创建a标签实现
+                    let link = document.createElement("a");
+                    link.href = uri;
+                    //对下载的文件命名
+                    link.download = "历史评价数据表.csv";
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                },
+                //上一页
+                prevPage() {
+                    if (this.page > 1) {
+                        this.page--;
+                        // alert(this.page)
+                    }
+                    if (this.page == 1) {
+                        this.disabled_downBtn = true;
+                        this.nextBtn = false;
+                    }
+                    this.getCustomers();
+                },
+                //下一页
+                nextPage() {
+                    this.page++;
+                    // alert(this.page);
+                    this.getCustomers();
+                    this.disabled_downBtn = true;
+                    if (this.page != 1) {
+                        this.disabled_downBtn = false;
+                    }
+                    // this.getHouses(this.formHeader.house_type ? this.formHeader.house_type : 1);
+                },
+
+            },
+            computed: {
+                // 计算数学，匹配搜索
+                filteredArticles: function () {
+                    var articles_array = this.tableData,
+                        searchString = this.search;
+
+                    if(!searchString){
+                        return articles_array;
+                    }
+
+                    searchString = searchString.trim().toLowerCase();
+                    //.trim() javascript方法 去除字符串头尾空格
+                    //.toLowerCase() javascript方法 把字符串转换为小写
+
+                    articles_array = articles_array.filter(function(item){
+                        //filter() 方法创建一个新的数组，新数组中的元素是通过检查指定数组中符合条件的所有元素。
+                        //写判断，当输入框中满足以下搜索条件时显示对应数据
+                        if(item.nickname.toLowerCase().indexOf(searchString) !== -1){
+                            return item;
+                        }else if(item.mobile.toLowerCase().indexOf(searchString) !== -1){
+                            return item;
+                        }else if(item.tag.toLowerCase().indexOf(searchString) !== -1){
+                            return item;
+                        }
+                    });
+                    // 返回过来后的数组
+                    return articles_array;
+
+                }
+            }
+        });
+        //关闭右键菜单
+        window.onclick = function (e) {
+            myvue.$data.show = false;
+        };
+
+    </script>
+</block>
+
+

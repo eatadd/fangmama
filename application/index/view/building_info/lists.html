@@ -1,0 +1,1037 @@
+<extend name="base/common"/>
+
+<block name="body">
+    <style>
+        .el-header {
+            color: #333;
+            line-height: 60px;
+            text-align: right;
+            font-size: 12px
+        }
+
+        .el-aside {
+            color: #333;
+        }
+
+        #menu {
+            position: absolute;
+        }
+
+        .el-menu {
+            box-shadow: 0 0 5px #ddd;
+            z-index: 99;
+            border: 1px solid #ddd;
+        }
+
+        .el-menu-item {
+            color: #555;
+            border-bottom: 1px solid #f3f3f3;
+        }
+
+        .el-menu-item:focus, .el-menu-item:hover {
+            background-color: #e6e9ed;
+            color: #ff5100
+        }
+
+        a {
+            text-decoration: none
+        }
+
+        .el-menu li {
+            height: 35px;
+            line-height: 35px;
+        }
+
+        .buliding_home_name {
+            color: #999;
+            margin-right: 10px;
+        }
+
+        .build_border_size {
+            font-size: 0.9rem;
+            color: #999;
+        }
+
+        .bulid_newtim_col {
+            padding: 5px 0px;
+        }
+
+        .bulid_info_tow_tit > h3 {
+            display: inline-block;
+        }
+
+        .bulid_info_tow_tit {
+            display: flex;
+            align-items: center;
+        }
+
+        .bulid_info_tow_tit > span {
+            background-color: #FF5501;
+            width: 4px;
+            display: inline-block;
+            height: 20px;
+            margin-right: 10px;
+        }
+
+        .build_info_two {
+            padding-top: 10px;
+        }
+
+        .build_ifo_two_news {
+            padding: 0 13px;
+        }
+
+        .build_ifo_two_news_dv {
+            font-size: 0.9rem;
+            line-height: 2;
+        }
+
+        .build_ifo_two_news_dv > span:first-child {
+            color: #999;
+            padding-right: 15px;
+        }
+
+        .build_house_ypp_img {
+            width: 100%;
+            /*height: 260px;*/
+        }
+
+        .build_three_neararea {
+            padding: 10px 0;
+        }
+
+        .build_three_area {
+            padding: 5px 0;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .build_three_area > span:first-child {
+            color: #999;
+            padding-right: 15px;
+        }
+
+        #allmap {
+            width: 100%;
+            height: 500px;
+            overflow: hidden;
+            margin: 0;
+            font-family: "微软雅黑";
+        }
+
+        .building_diolg_up {
+            padding-left: 50px;
+        }
+
+        .building_diolg_soan {
+            min-height: 2.5rem;
+            line-height: 2.5rem;
+            display: block;
+        }
+
+        .index_prop_tu {
+            background-color: rgba(111, 121, 111, .05);
+            text-align: center;
+        }
+
+        /**弹窗显示滚动与溢出*/
+        .prop_auto {
+            height: 350px;
+            overflow: hidden;
+            overflow-y: auto;
+        }
+
+        /*//上传图片显示删除按钮的隐藏*/
+        .el-icon-picture-outline {
+            font-size: 50px;
+            margin-top: 170px;
+            color: #ddd;
+        }
+    </style>
+    <div id="app" v-hide>
+        <el-container>
+            <el-container v-loading="loading">
+                <el-header>
+                    <el-row>
+                        <el-col :span="5">
+                            <div class="grid-content bg-purple-dark">
+                                <div style="float: left;">
+
+                                    <!--<el-button type="primary" @click="handleForm(0)" icon="el-icon-plus" size="small">-->
+                                    <!--</el-button>-->
+
+                                    <!--修改按钮-->
+                                    <el-button type="danger" icon="el-icon-edit" size="small" @click="open">
+                                    </el-button>
+                                    <el-button type="primary" icon="el-icon-plus" size="small" v-if="new_see" @click="addd_open" >
+                                    </el-button>
+                                </div>
+                            </div>
+                        </el-col>
+                        <el-col :span="19" style="float: right">
+                            <el-row>
+                                <el-col :span="24">
+                                    <div style="float: right;">
+
+                                    </div>
+                                </el-col>
+
+                            </el-row>
+                        </el-col>
+                    </el-row>
+                </el-header>
+                <el-main
+                        @row-contextmenu.prevent="openDetails"
+                        @row-dblclick="row_clicks"
+                        :data="tableData"
+                        style="margin-top: -15px;">
+
+                    <!--轮播图-->
+                    <template>
+                        <el-carousel class="index_prop_tu" trigger="click" height="360px" interval="10000000">
+                            <el-carousel-item  v-if="this.tableData.video != '' " >
+                                <video controls="controls" v-if="videoVisible" height="100%"
+                                       width="100%">
+                                    <source :src="videosrc" type="video/mp4">
+                                </video>
+                            </el-carousel-item>
+                            <el-carousel-item v-for="item in tableData.show_images" :key="item" style="text-align: center">
+                                <div class="demo-image__error">
+                                    <div class="block">
+                                        <el-image
+                                                :src="item.substr(0,4).toLowerCase() == 'http' ? item : utils.img_domain + item"
+                                                height="100%" width="auto">
+                                            <div slot="error" class="image-slot">
+                                                <i class="el-icon-picture-outline"></i>
+                                            </div>
+                                        </el-image>
+                                    </div>
+                                </div>
+                                <!--<img :src="item.substr(0,4).toLowerCase() == 'http' ? item : utils.img_domain + item"  height="100%" width="auto" @click="lumbigImg" />-->
+                            </el-carousel-item>
+                        </el-carousel>
+                    </template>
+
+                    <!--第一部分信息-->
+                    <div class="" style="margin-top: 20px;">
+                        <el-row style="padding: 5px 0">
+                            <el-col :span="12">
+                                <div class="grid-content bg-purple ">
+                                    <span class="buliding_home_name">房源 :</span> {{tableData.name || "暂无数据"}}
+                                </div>
+                            </el-col>
+                            <el-col :span="12">
+                                <div class="grid-content bg-purple-light" style="color:red;">
+                                    <span style="font-size: 1.1rem;">{{tableData.unit_price || "暂无价格"}} 元</span> /
+                                    <span>平方米</span>
+                                </div>
+                            </el-col>
+                        </el-row>
+
+                        <el-row :gutter="20" style="padding: 15px 0;font-size: 0.9rem;">
+                            <el-col :span="16">
+                                <div class="grid-content bg-purple">
+                                    <i class="el-icon-location-outline"></i> {{tableData.address || "暂无地址"}}
+                                </div>
+                            </el-col>
+                        </el-row>
+
+                        <el-row class="build_border_size bulid_newtim_right">
+                            <el-col :span="12" class="bulid_newtim_col">
+                                <div class="grid-content bg-purple">
+                                    最新开盘时间: {{tableData.open_time || "暂无数据"}}
+                                </div>
+                            </el-col>
+                            <el-col :span="12" class="bulid_newtim_col">
+                                <div class="grid-content bg-purple">
+                                    浏览次数: {{tableData.view_count || "暂无数据"}}次
+                                </div>
+                            </el-col>
+                        </el-row>
+                    </div>
+
+                    <!--第二部分-->
+                    <div class="build_info_two">
+                        <div class="bulid_info_tow_tit">
+                            <span></span>
+                            <h3>楼盘简介</h3>
+                        </div>
+                        <div class="build_ifo_two_news">
+                            <el-row>
+                                <el-col :span="12">
+                                    <div class="grid-content bg-purple build_ifo_two_news_dv">
+                                        <span>房屋总价</span> <span>{{tableData.price || "暂无价格"}}万</span>
+                                    </div>
+                                </el-col>
+                                <el-col :span="12">
+                                    <div class="grid-content bg-purple-light build_ifo_two_news_dv">
+                                        <span>所属财产</span> <span>{{tableData.house_property || "暂无数据"}}</span>
+                                    </div>
+                                </el-col>
+                            </el-row>
+                            <el-row>
+                                <el-col :span="12">
+                                    <div class="grid-content bg-purple build_ifo_two_news_dv">
+                                        <span>房屋户型</span> <span>{{tableData.title || "暂无数据"}}</span>
+                                    </div>
+                                </el-col>
+                                <el-col :span="12">
+                                    <div class="grid-content bg-purple-light build_ifo_two_news_dv">
+                                        <span>装修情况</span> <span>{{tableData.decoration || "暂无数据"}}</span>
+                                    </div>
+                                </el-col>
+                            </el-row>
+                            <el-row>
+                                <el-col :span="12">
+                                    <div class="grid-content bg-purple build_ifo_two_news_dv">
+                                        <span>房本面积</span> <span>{{tableData.house_size || "暂无数据"}} ㎡</span>
+                                    </div>
+                                </el-col>
+                                <el-col :span="12">
+                                    <div class="grid-content bg-purple build_ifo_two_news_dv">
+                                        <span>所在楼层</span> <span>{{tableData.house_floor || "暂无数据"}}层</span>
+                                    </div>
+                                </el-col>
+                            </el-row>
+
+                        </div>
+                    </div>
+
+                    <!--第三段户型图内容-->
+                    <div class="build_info_three">
+                        <div class="bulid_info_tow_tit">
+                            <span></span>
+                            <h3>户型图</h3>
+                        </div>
+                        <div class="build_house_ypp_img" style="padding: 10px 0;">
+                            <el-carousel trigger="click" class="index_prop_tu" height="360px">
+                                <el-carousel-item v-for="item in tableData.house_type_images" :key="item">
+                                    <div class="demo-image__error">
+                                        <div class="block">
+                                            <el-image
+                                                    :src="item.substr(0,4).toLowerCase() == 'http' ? item : utils.img_domain + item"
+                                                    height="100%" width="auto">
+                                                <div slot="error" class="image-slot">
+                                                    <i class="el-icon-picture-outline"></i>
+                                                </div>
+                                            </el-image>
+                                        </div>
+                                    </div>
+                                    <!--<img :src="item.substr(0,4).toLowerCase() == 'http' ? item : utils.img_domain + item"-->
+                                         <!--alt="" width="auto" height="100%">-->
+                                </el-carousel-item>
+                            </el-carousel>
+
+                        </div>
+                        <div class="build_three_neararea">
+                            <div class="build_three_school build_three_area">
+                                <span>附近学校</span>
+                                <span>{{tableData.near_school || "暂无数据"}}</span>
+                            </div>
+                            <div class="build_three_subway build_three_area">
+                                <span>附近地铁</span>
+                                <span>{{tableData.near_subway || "暂无数据"}}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!--第四段户型图内容-->
+                    <div class="build_info_four" v-if="this.tableData.lat != 0 && this.tableData.lng != 0" style="padding-bottom: 40px;">
+                        <div class="bulid_info_tow_tit">
+                            <span></span>
+                            <h3>附近周边</h3>
+                        </div>
+                        <!--地图展示-->
+                        <div id="allmap"></div>
+                    </div>
+
+
+                </el-main>
+
+
+            </el-container>
+        </el-container>
+
+        <!--d点击编辑按钮显示的弹窗编辑-->
+        <el-dialog title="编辑内容" :visible.sync="dialogFormVisible" width="70%">
+            <el-form :model="form" class="prop_auto">
+                <el-form-item label="房屋总价" :label-width="formLabelWidth">
+                    <el-input v-model="tableData.price" autocomplete="off"></el-input>
+                </el-form-item>
+                <el-form-item label="所属财产" :label-width="formLabelWidth">
+                    <el-input v-model="tableData.house_property" autocomplete="off"></el-input>
+                </el-form-item>
+                <el-form-item label="房型户型" :label-width="formLabelWidth">
+                    <el-input v-model="tableData.title" autocomplete="off"></el-input>
+                </el-form-item>
+                <el-form-item label="装修情况" :label-width="formLabelWidth">
+                    <el-input v-model="tableData.decoration" autocomplete="off"></el-input>
+                </el-form-item>
+                <el-form-item label="房本面积" :label-width="formLabelWidth">
+                    <el-input v-model="tableData.house_size" autocomplete="off"></el-input>
+                </el-form-item>
+                <el-form-item label="所在楼层" :label-width="formLabelWidth">
+                    <el-input v-model="tableData.house_floor" autocomplete="off"></el-input>
+                </el-form-item>
+                <div class="building_diolg_up">
+                    <span class="building_diolg_soan">上传展示图片</span>
+                    <el-upload
+                            action="http://127.0.0.1:8000/request/upload"
+                            name="image"
+                            :file-list="fileLists"
+                            list-type="picture-card"
+                            :on-preview="handlePictureCardPreview"
+                            :on-remove="handleRemove"
+                            :on-success="handleAvatarSuccess"
+                    >
+                        <i class="el-icon-plus"></i>
+                    </el-upload>
+                    <el-dialog :visible.sync="dialogVisible">
+                        <img width="100%" :src="dialogImageUrl" alt="">
+                    </el-dialog>
+                </div>
+                <div class="building_diolg_up">
+                    <span class="building_diolg_soan">上传户型图片</span>
+                    <el-upload
+                            action="http://127.0.0.1:8000/request/upload"
+                            name="image"
+                            :file-list="fileListss"
+                            list-type="picture-card"
+                            :on-preview="handlePictureCardPreview"
+                            :on-remove="handleRemoves"
+                            :on-success="handleAvatarSuccess_dob"
+                    >
+                        <i class="el-icon-plus"></i>
+                    </el-upload>
+                    <el-dialog :visible.sync="dialogVisible">
+                        <img width="100%" :src="dialogImageUrl" alt="">
+                    </el-dialog>
+                </div>
+
+            </el-form>
+            <div slot="footer" class="dialog-footer">
+                <el-button @click="dialogFormVisible = false">取 消</el-button>
+                <el-button type="primary" @click="buildsure">确 定</el-button>
+            </div>
+        </el-dialog>
+
+        <!--点击新增按钮显示的弹窗新增楼盘信息-->
+        <el-dialog title="编辑内容" :visible.sync="dialogNew_add" width="70%">
+            <el-form :model="form" class="prop_auto">
+                <el-form-item label="房屋名称" :label-width="formLabelWidth">
+                    <el-input v-model="newtable.name" autocomplete="off"></el-input>
+                </el-form-item>
+                <el-form-item label="房屋总价" :label-width="formLabelWidth">
+                    <el-input v-model="newtable.price" autocomplete="off"></el-input>
+                </el-form-item>
+                <el-form-item label="所属财产" :label-width="formLabelWidth">
+                    <el-input v-model="newtable.house_property" autocomplete="off"></el-input>
+                </el-form-item>
+                <el-form-item label="房型户型" :label-width="formLabelWidth">
+                    <el-input v-model="newtable.title" autocomplete="off"></el-input>
+                </el-form-item>
+                <el-form-item label="装修情况" :label-width="formLabelWidth">
+                    <el-input v-model="newtable.decoration" autocomplete="off"></el-input>
+                </el-form-item>
+                <el-form-item label="房本面积" :label-width="formLabelWidth">
+                    <el-input v-model="newtable.house_size" autocomplete="off"></el-input>
+                </el-form-item>
+                <el-form-item label="所在楼层" :label-width="formLabelWidth">
+                    <el-input v-model="newtable.house_floor" autocomplete="off"></el-input>
+                </el-form-item>
+                <div class="building_diolg_up">
+                    <span class="building_diolg_soan">上传展示图片</span>
+                    <el-upload
+                            action="http://127.0.0.1:8000/request/upload"
+                            name="image"
+                            :file-list="newtable.show_images"
+                            list-type="picture-card"
+                            :on-preview="handlePictureCardPreview"
+                            :on-remove="handleRemove"
+                            :on-success="handleAvatarSuccess_new"
+                    >
+                        <i class="el-icon-plus"></i>
+                    </el-upload>
+                    <el-dialog :visible.sync="dialogVisible">
+                        <img width="100%" :src="zhanshimageUrl" alt="">
+                    </el-dialog>
+                </div>
+                <div class="building_diolg_up">
+                    <span class="building_diolg_soan">上传户型图片</span>
+                    <el-upload
+                            action="http://127.0.0.1:8000/request/upload"
+                            name="image"
+                            :file-list="fileListss"
+                            list-type="picture-card"
+                            :on-preview="handlePictureCardPreview"
+                            :on-remove="handleRemove"
+                            :on-success="handleAvatarSuccess_dob_new"
+                    >
+                        <i class="el-icon-plus"></i>
+                    </el-upload>
+                    <el-dialog :visible.sync="dialogVisible">
+                        <img width="100%" :src="zhanshimageUrl" alt="">
+                    </el-dialog>
+                </div>
+
+            </el-form>
+            <div slot="footer" class="dialog-footer">
+                <el-button @click="dialogNew_add = false">取 消</el-button>
+                <el-button type="primary" @click="buildsure_add">确 定</el-button>
+            </div>
+        </el-dialog>
+
+    </div>
+</block>
+<block name="js">
+    <!--2019/10/11 狸猫新增地图js引入-->
+    <script type="text/javascript" src="//api.map.baidu.com/api?v=2.0&ak=cOrtbdRp4rHUoUKiSDR81w8XjDLLwEdb"></script>
+    <script type="text/javascript">
+        let user_data = JSON.parse('{:cache("user_data")}');
+        let clickTimer = null;
+        var myvue = new Vue({
+            el: '#app',
+            data: {
+                newtable: {
+                    name: '',
+                    house_intro: '',
+                    show_images: [],
+                    house_type_images: [],
+                    house_images: '',
+                    house_support: '',
+                    open_time: '',
+                    title: '',
+                    type: '',
+                    is_share: '',
+                    delivery_time: '',
+                    house_type: '',
+                    house_config_param: '',
+                    house_property: '',
+                    price: '',
+                    address: '',
+                    house_size: '',
+                    house_floor: '',
+                    feature: '',
+                    near_school: '',
+                    near_subway: '',
+                    decoration: '',
+                    style: '',
+                    direction: '',
+                    total_price: '',
+                    unit_price: '',
+                    pay_type: '',
+                    owner_name: '',
+                    owner_mobile: '',
+                    bottom_price: '',
+                    desc: '',
+                    secret_remark: '',
+                    down_payment: '',
+                    house_type_id: '',
+                    users_number: '',
+                    house_index_str:'',
+                    elevator: '',
+                    developer: '',
+                    property_years: '',
+                    entrance: '',
+                    video: '',
+                    video_cover: '',
+                },
+                dialogNew_add:false,
+                new_see:false,
+                fileListss: [],
+                fileLists: [],
+                tableData: [],
+                lists: [],
+                value: '',
+                search: '',
+                input2: '',
+                show: false,
+                drawer: false,
+                direction: 'btt',
+                dialogFormVisible: false,
+                formVisible: false,
+                activeName: 'one',
+                activeIndex: '1',
+                activeIndex2: '1',
+                customer: {id: ""},
+                customer_id: 0,
+                forms: [],
+                formDom: {},
+                form: {
+                    name: '',
+                    region: '',
+                    date1: '',
+                    date2: '',
+                    delivery: false,
+                    type: [],
+                    resource: '',
+                    desc: ''
+                },
+                loading: false,
+                customerFollows: [],
+                followOption: {},
+                tabs: [],//点击后显示的弹窗中的显示内容
+                tabIndex: 0,
+                formIndex: 0,
+                datas: [],
+                datasPage: 1,
+                datasNextBtn: true,
+                header: {user_token: user_data.user_token.user_token, store_id: user_data.store_user_info.store_id},
+                page: 1,
+                nextBtn: true,
+                formLabelWidth: '120px',
+                dialogImageUrl: '',
+                dialogVisible: false,
+                videoVisible: false,
+                videosrc: '',
+                imageUrl: '',
+                zhanshimageUrl: '',
+                huxingimageUrl: '',
+
+            },
+            created() {
+                this.getCustomers();
+
+            },
+            methods: {
+                getCustomers() {
+                    this.loading = true;
+                    let data = Object.assign({
+                        url: 'extend/manager/House/getbuildHouseInfo',
+                        page: this.page,
+                    }, this.header);
+                    //console.log(data); 这个console是获取活的usertoken
+                    utils.ajax({
+                        data: data,
+                        success: (res) => {
+                            this.loading = false;
+                            // alert(JSON.stringify(res.data))
+                            console.log(res.data);
+                            if (res.data.code == -2) {
+                                this.$message.error(res.data.msg);
+                                return false;
+                            } else if (res.data.code == 0) {
+                                this.$message.error(res.data.msg);
+                                return false;
+                            } else if (res.data.code == 1) {
+                                if(res.data.data == ''){
+                                    this.new_see = true;
+                                }else {
+                                    this.new_see = false;
+                                }
+                                // alert(res.data.data.address);
+                                // console.log(this.tableData);
+                                this.maps();
+                                //编辑里面室内图展示的数组分割 || 遍历数组展示在编辑弹窗中室内图展示上传图片的显示
+                                let imgs = res.data.data.show_images.split(',');
+                                res.data.data.show_images = imgs;
+                                for (var i = 0; i < imgs.length; i++) {
+                                    myvue.$data.fileLists.push({
+                                        'url': (imgs[i].substr(0, 4).toLowerCase() == 'http') ? imgs[i] : utils.img_domain + imgs[i],
+                                    });
+                                }
+                                //编辑里面户型图的数组分割 || 遍历数组展示在编辑弹窗中上传图片的显示
+                                let huxing = res.data.data.house_type_images.split(',');
+                                res.data.data.house_type_images = huxing;
+                                for (var i = 0; i < huxing.length; i++) {
+                                    myvue.$data.fileListss.push({
+                                        'url': (huxing[i].substr(0, 4).toLowerCase() == 'http') ? huxing[i] : utils.img_domain + huxing[i],
+                                    });
+                                }
+
+                                //获取的数据视屏是否为空的判断
+                                let viedoLen = res.data.data.video.length;
+
+                                if (viedoLen == '') {
+                                    console.log('上传视屏为空');
+                                } else {
+                                    this.videoVisible = true;
+                                    this.videosrc = utils.img_domain + res.data.data.video;
+                                }
+
+                                this.tableData = res.data.data;
+                                console.log('nwe', this.tableData );
+
+                            }
+                            // console.log(data);
+                        },
+                        error: function (res) {
+                            console.log('error' + res)
+                        }
+                    })
+                    this.formDom = this.forms[this.formIndex];
+                },
+                prevPage() {
+                    this.page--;
+                    this.getCustomers();
+                },
+                nextPage() {
+                    this.page++;
+                    this.getCustomers();
+                },
+                datasPrevPage() {
+                    this.datasPage--;
+                    this.getTabDataList();
+                },
+                datasNextPage() {
+                    this.datasPage++;
+                    this.getTabDataList();
+                },
+                handleSelect(key, keyPath) {
+                    console.log(key, keyPath);
+                },
+                //点击编辑图标显示弹窗修改内容
+                open() {
+                    // this.fileLists = [];
+                    // this.fileListss = [];
+                    this.getCustomers();
+                    this.dialogFormVisible = true;
+                },
+                //如果当前楼盘信息无数据的时候显示新增按钮添加数据的显示
+                addd_open(){
+                    this.newtable.show_images = [];
+                    this.newtable.house_type_images = [];
+                    this.dialogNew_add = true;
+                },
+                //点击编辑的弹窗上传
+                buildsure() {
+                    let data = Object.assign({
+                        url: 'extend/manager/House/editBuildHouseInfo',
+                        page: this.page,
+                    }, this.header);
+                    //console.log(data); 这个console是获取活的usertoken
+                    let datas = Object.assign(data, this.tableData);
+                    //console.log(datas);//提交数据把原本获取到的tabelData数据赋值
+                    var house_type_images = '';
+                    var show_images = '';
+                    for (var i = 0; i < datas.house_type_images.length; i++) {
+                        house_type_images += datas.house_type_images[i] + ",";
+                    }
+                    for (var y = 0; y < datas.show_images.length; y++) {
+                        show_images += datas.show_images[y] + ",";
+                    }
+                    datas.house_type_images = house_type_images.substring(0, house_type_images.lastIndexOf(','));
+                    datas.show_images = show_images.substring(0, show_images.lastIndexOf(','));
+                    datas.status = '';
+                    datas.is_private = '';
+                    console.log(datas);
+                    utils.ajax({
+                        data: datas,
+                        success: (res) => {
+                            // console.log(res.data);
+                            if (res.data.code == -2) {
+                                this.$message.error(res.data.msg);
+                                return false;
+                            } else if (res.data.code == 1) {
+                                // alert(res.data.data.address);
+                                this.$message.success(res.data.msg);
+                                this.dialogFormVisible = false;
+                                this.getCustomers();
+                            } else if (res.data.code == 0) {
+                                this.$message.error(res.data.msg);
+                                return false;
+                            }
+                            // console.log(data);
+                        },
+                        error: function (res) {
+                            console.log('error' + res)
+                        }
+                    })
+                },
+                //点击新增楼盘信息的上传
+                buildsure_add(){
+                    let data = Object.assign({
+                        url: 'extend/manager/House/addBuildHouseInfo',
+                        // name: this.newtable.name,
+                        // price: this.newtable.price,
+                        // house_property: this.newtable.house_property,
+                        // title: this.newtable.title,
+                        // decoration: this.newtable.decoration,
+                        // house_size: this.newtable.house_size,
+                        // house_floor: this.newtable.house_floor,
+                        // show_images:this.fileLists,
+                        // house_type_images:this.fileListss
+                    }, this.header);
+                    //console.log(data); 这个console是获取活的usertoken
+                    let datas = Object.assign(data, this.newtable);
+
+                    datas.show_images = datas.show_images.toString();
+                    datas.house_type_images = datas.house_type_images.toString();
+
+                    console.log(datas);
+
+                    utils.ajax({
+                        data: datas,
+                        success: (res) => {
+                            // console.log(res.data);
+                            if (res.data.code == -2) {
+                                this.$message.error(res.data.msg);
+                                return false;
+                            } else if (res.data.code == 1) {
+                                // alert(res.data.data.address);
+                                this.$message.success(res.data.msg);
+                                this.dialogNew_add = false;
+                                this.getCustomers();
+                            } else if (res.data.code == 0) {
+                                this.$message.error(res.data.msg);
+                                return false;
+                            }
+                            // console.log(data);
+                        },
+                        error: function (res) {
+                            console.log('error' + res)
+                        }
+                    })
+                },
+                openDetails(row, column, event) {
+                    event.preventDefault();
+                    row.id = row.id || 0;
+                    if (row.id == 0) {
+                        this.$message.error('数据异常');
+                        return;
+                    }
+                    // this.show = this.show ? false : true;
+                    this.show = true;
+                    var menu = document.querySelector("#menu");
+                    menu.style.left = event.clientX + 'px';
+                    menu.style.top = event.clientY + 'px';
+                },
+                //双击
+                row_clicks(row, event) {
+                    if (clickTimer) {
+                        window.clearTimeout(clickTimer);
+                        clickTimer = null;
+                    }
+                    // 确定选中的客源
+                    let customer = Object.assign({}, row);
+                    this.customer = customer;
+                    // your click process code here
+                    this.dialogFormVisible = true;
+
+                    this.getTabDataList();
+                },
+                showDialog() {
+                    this.dialogFormVisible = true;
+                },
+                handleClick(tab, event) {
+                    // 绑定tab的index值（下标）
+                    this.tabIndex = tab.index;
+                    this.datasPage = 1;
+                    this.getTabDataList();
+
+                },
+                // 显示表单
+                handleForm(index, row) {
+                    this.formDom = this.forms[index];
+
+                    this.formVisible = true;
+                    if (index == 1 || index == 2) {
+                        this.form = {
+                            "house_id": row.id,
+                            "customer_id": this.customer.id,
+                            "house_type_id": 1
+                        }
+                        // 获取跟进状态列表
+                        if (this.formIndex != index) {
+                            this.getFollowOption();
+                            this.formIndex = index;
+                        }
+                    }
+                },
+                onSubmit() {
+                    this.formDom.loading = true;
+
+                    let data = Object.assign({
+                        url: 'extend/manager/' + this.formDom.action
+                    }, this.form, this.header);
+                    console.log(data);
+                    utils.ajax({
+                        data: data,
+                        success: (res) => {
+                            // console.log(res.data);
+
+                            // this.$message({
+                            //     type: 'info',
+                            //     message: res.data.msg
+                            // });
+                            this.formDom.loading = false;
+                            if (res.data.code) {
+                                this.$message({
+                                    message: res.data.msg,
+                                    type: 'success'
+                                });
+                                this[this.formDom.list].unshift(this.form);
+
+                                this.form = {};  // 如果添加成功，表单就清空
+                                this.formVisible = false; // 隐藏表单
+
+                            } else {
+                                this.$message.error(res.data.msg);
+                            }
+                        },
+                        error: function (res) {
+                            console.log('error' + res)
+                        }
+                    })
+                },
+                getTabDataList() {
+                    if (!Number(this.tabIndex)) return false;
+                    this.lists = [];
+                    this.loading = true;
+                    let query = {};
+                    //  如果当前选中的是 客源跟进 或者是 签约记录
+                    if (this.tabIndex == 1 || this.tabIndex == 3) {
+                        query = {customer_id: this.customer.id};
+                    }
+                    //  房源列表暂时不需要 第二个源对象   所以为 空 query = {}
+
+                    let data = Object.assign({'page': this.datasPage},
+                        this.tabs[this.tabIndex - 1].query, query, this.header);
+                    console.log(data);
+                    utils.ajax({
+                        data: data,
+                        success: (res) => {
+                            console.log(res.data);
+                            this.loading = false;  // 关闭加载动画
+                            let count = 0;
+                            if (res.data.code == 1) {
+                                let data = res.data.data;
+                                this.lists = data;
+                                count = data.length;
+                            }
+                            this.datasNextBtn = count >= 10 ? false : true;
+
+
+                        },
+                        error: function (res) {
+                            console.log('error' + res)
+                        }
+                    })
+                },
+                getFollowOption() {
+                    let follows = Object.keys(this.followOption);
+                    // console.log('follows.length: ' + follows.length);
+                    if (follows.length == 0) {
+                        this.formDom.loading = true;
+
+                        let data = Object.assign({url: 'extend/manager/HouseFollow/getFollowOption'}, this.header);
+                        utils.ajax({
+                            data: data,
+                            success: (res) => {
+                                this.formDom.loading = false;  // 关闭加载动画
+                                if (res.data.code == 1) {
+                                    let value = [];
+                                    for (let i of res.data.data) {
+                                        value.push({'title': i.key, 'value': i.id});
+                                    }
+                                    let data = {
+                                        'title': '跟进状态', 'field': 'step',
+                                        'value': value,
+                                        'type': 'region'
+                                    };
+                                    this.formDom.field.push(data);
+                                    // 将跟进状态的结构对象，赋值给followOption 对象，以便下次使用时不需要再次获取
+                                    this.followOption = data;
+                                }
+                            },
+                            error: function (res) {
+                                console.log('error' + res);
+                            }
+                        })
+                    } else {
+                        this.formDom.field.push(this.followOption);
+                    }
+                },
+                //上传.移出文件
+                handleRemove(file, fileList) {
+                    this.tableData.show_images = [];
+                    for(let i=0;i<fileList.length;i++){
+                        this.tableData.show_images.push( fileList[i].url.replace(utils.img_domain,'') );
+                    }
+                    // this.tableData.show_images.pop(file.url);
+                },
+                handleRemoves(file,fileList){
+                    this.tableData.house_type_images = [];
+                    for(let i=0;i<fileList.length;i++){
+                        this.tableData.house_type_images.push( fileList[i].url.replace(utils.img_domain,'') );
+                    }
+                    console.log(fileList);
+                },
+                handlePictureCardPreview(file) {
+
+                    this.dialogImageUrl = file.url;
+                    this.dialogVisible = true;
+
+                },
+                lumbigImg() {
+                },
+                handleAvatarSuccess(res, file, fileList) {
+                    // console.log(res);
+                    var i = res.indexOf("{");
+                    var s = res.indexOf("<script");
+                    var ret = res.substr(i, s);
+                    ret = JSON.parse(ret);
+                    this.tableData.show_images.push(ret.data.data);
+                    file.url = (ret.data.data.substr(0, 4).toLowerCase() == 'http') ? ret.data.data : utils.img_domain + ret.data.data;
+                    // this.imageUrl = URL.createObjectURL(file.raw);
+                },
+                handleAvatarSuccess_dob(res, file, fileList) {
+                    var is = res.indexOf("{");
+                    var ss = res.indexOf("<script");
+                    var rets = res.substr(is, ss);
+                    rets = JSON.parse(rets);
+                    console.log(rets.data.data);
+                    this.tableData.house_type_images.push(rets.data.data);
+                    file.url = (rets.data.data.substr(0, 4).toLowerCase() == 'http') ? rets.data.data : utils.img_domain + rets.data.data;
+                }, //上传
+                //新增
+                handleAvatarSuccess_new(res, file, fileList) {
+                    // console.log(res);
+                    var i = res.indexOf("{");
+                    var s = res.indexOf("<script");
+                    var ret = res.substr(i, s);
+                    ret = JSON.parse(ret);
+                    this.newtable.show_images.push(ret.data.data);
+                    // this.zhanshimageUrl = URL.createObjectURL(file.raw);
+                    // this.imageUrl = URL.createObjectURL(file.raw);
+                },
+                handleAvatarSuccess_dob_new(res, file, fileList) {
+                    var is = res.indexOf("{");
+                    var ss = res.indexOf("<script");
+                    var rets = res.substr(is, ss);
+                    rets = JSON.parse(rets);
+                    console.log(rets.data.data);
+                    this.newtable.house_type_images.push(rets.data.data);
+                }, //上传
+                maps(){
+                    // 百度地图API功能
+                    var map = new BMap.Map("allmap");    // 创建Map实例
+                    map.centerAndZoom(new BMap.Point(this.tableData.lng, this.tableData.lat), 11);  // 初始化地图,设置中心点坐标和地图级别
+                    //添加地图类型控件
+                    map.addControl(new BMap.MapTypeControl({
+                        mapTypes: [
+                            BMAP_NORMAL_MAP,
+                            BMAP_HYBRID_MAP
+                        ]
+                    }));
+                    map.setCurrentCity("宿迁");          // 设置地图显示的城市 此项是必须设置的
+                    map.enableScrollWheelZoom(true);     //开启鼠标滚轮缩放
+                }
+            },
+            // 过滤器
+            filters: {
+                statusFilterType(status) {
+                    // const statusMap = {'1': '有意向', '2': '看房', '3': '前订购协议', '4': '签合同', '5': '付款'};
+                    // return statusMap[status];
+                },
+            }
+        });
+        //关闭右键菜单
+        window.onclick = function (e) {
+            myvue.$data.show = false;
+        }
+
+
+
+    </script>
+</block>

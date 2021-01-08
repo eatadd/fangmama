@@ -1,0 +1,408 @@
+<extend name="base/common"/>
+<!--2019/10/21 邹志强-->
+<!--我的合作目录下 -&#45;&#45; 我的报备页面-->
+<block name="body">
+    <style>
+        .el-header {
+            color: #333;
+            line-height: 60px;
+            text-align: right;
+            font-size: 12px
+        }
+
+        .el-aside {
+            color: #333;
+        }
+
+        #menu {
+            position: absolute;
+        }
+
+        .el-menu {
+            box-shadow: 0 0 5px #ddd;
+            z-index: 99;
+            border: 1px solid #ddd;
+        }
+
+        .el-menu-item {
+            color: #555;
+            border-bottom: 1px solid #f3f3f3;
+        }
+
+        .el-menu-item:focus, .el-menu-item:hover {
+            background-color: #e6e9ed;
+            color: #ff5100
+        }
+
+        a {
+            text-decoration: none
+        }
+
+        .el-menu li {
+            height: 35px;
+            line-height: 35px;
+        }
+        .cell{
+            /*text-align: center;*/
+        }
+
+        /*2019/11/8 狸猫修改我的报备*/
+        .el-tabs__nav-wrap::after {
+            /*width: 210px;*/
+            /*left: -15px;*/
+            height: 1px!important;
+        }
+    </style>
+    <div id="app" v-hide>
+        <el-container>
+            <el-container>
+                <!--头部-->
+                <el-header
+                >
+                    <el-row>
+                        <el-col :span="24">
+                            <template>
+                                <el-tabs v-model="activeName"  @tab-click="handleClick">
+                                    <el-tab-pane label="我发出的报备" name="first"></el-tab-pane>
+                                    <el-tab-pane label="我收到的报备" name="second"></el-tab-pane>
+                                </el-tabs>
+                            </template>
+
+                        </el-col>
+
+                                <div style="float: right;position: absolute;right: 0">
+                                    <el-input
+                                            size="small"
+                                            placeholder="请输入搜索楼盘名"
+                                            prefix-icon="el-icon-search"
+                                            v-model="search_m"
+                                            @keyup.enter.native="search" @keyup.delete.native="search">
+                                    </el-input>
+                                </div>
+
+                    </el-row>
+                </el-header>
+
+                <!--正文-->
+                <el-main style="margin-top: -15px;">
+                    <!--我发出的报备-->
+                    <template v-if="issue_request">
+                        <el-table
+                                :data="tableData"
+                                style="width: 100%;">
+                            <el-table-column
+                                    prop="building.title"
+                                    label="楼盘名称">
+                            </el-table-column>
+                            <el-table-column
+                                    prop="building.address"
+                                    label="楼盘位置">
+                            </el-table-column>
+                            <!--<el-table-column-->
+                                    <!--prop="building.update_time"-->
+                                    <!--label="开盘时间">-->
+                            <!--</el-table-column>-->
+                            <el-table-column
+                                    prop="name"
+                                    label="客户姓名"
+                            >
+                            </el-table-column>
+                            <el-table-column
+                                    prop="mobile"
+                                    label="手机号码">
+                            </el-table-column>
+                            <el-table-column
+                                    prop="sex"
+                                    label="客户性别">
+                            </el-table-column>
+                            <el-table-column
+                                    prop="create_time"
+                                    label="发出时间"
+                            >
+                            </el-table-column>
+                        </el-table>
+                    </template>
+
+                    <!--我收到的报备-->
+                    <template v-if="issue_report">
+                        <el-table
+                                :data="tableData_new"
+                                style="width: 100%;">
+                            <el-table-column
+                                    prop="building.title"
+                                    label="楼盘名称">
+                            </el-table-column>
+                            <el-table-column
+                                    prop="building.address"
+                                    label="楼盘位置">
+                            </el-table-column>
+                            <el-table-column
+                                    prop="store_uers_nickname"
+                                    label="经纪人">
+                            </el-table-column>
+                            <!--<el-table-column-->
+                                    <!--prop="building.update_time"-->
+                                    <!--label="开盘时间">-->
+                            <!--</el-table-column>-->
+                            <el-table-column
+                                    prop="name"
+                                    label="客户姓名"
+                            >
+                            </el-table-column>
+                            <el-table-column
+                                    prop="mobile"
+                                    label="手机号码">
+                            </el-table-column>
+                            <el-table-column
+                                    prop="sex"
+                                    label="客户性别">
+                            </el-table-column>
+                            <el-table-column
+                                    prop="create_time"
+                                    label="收到时间"
+                            >
+                            </el-table-column>
+                        </el-table>
+                    </template>
+                </el-main>
+
+                <!--底部-->
+                <el-footer style="text-align: center">
+                    <!--<el-pagination style="text-align: center" hide-on-single-page backgroundlayout="prev, pager, next"-->
+                    <!--:total="50">-->
+                    <!--</el-pagination>-->
+                    <el-button type="text" icon="el-icon-arrow-left" size="medium" :disabled="disabled_downBtn"
+                               @click="prevPage">上一页</el-button>
+                    <el-button type="text" size="medium" @click="nextPage" :disabled="nextBtn">下一页<i
+                            class="el-icon-arrow-right el-icon--right"></i></el-button>
+                </el-footer>
+
+            </el-container>
+
+        </el-container>
+    </div>
+</block>
+<block name="js">
+    <script type="text/javascript">
+        let user_data = JSON.parse('{:cache("user_data")}');
+        let clickTimer = null;
+        var myvue = new Vue({
+            el: '#app',
+            data: {
+                tableData:  [],
+                tableData_new: [],
+                value: '',
+                search_m: '',
+                show: false,
+                add_btn: true,
+                del_btn: true,
+                drawer: false,
+                direction: 'btt',
+                dialogFormVisible: false,
+                page: 1,
+                new_page:1,
+                page_size: 8,
+                disabled_downBtn:true,
+                nextBtn: false,
+                header: {user_token: user_data.user_token.user_token, store_id: user_data.store_user_info.store_id},
+                activeName: 'first',
+                issue_request:true,
+                issue_report:false,
+            },
+            created() {
+
+                this.getCustomers();
+            },
+            methods: {
+                //我发出的报备获取数据
+                getCustomers() {
+                    let data = Object.assign({
+                        url: 'extend/manager/report_building/getMyBuildingUser',
+                        page: this.page,
+                        page_size: this.page_size,
+                        search:this.search_m,
+                    }, this.header);
+                    utils.ajax({
+                        data: data,
+                        success: (res) => {
+                            console.log(res);
+                            this.loading = false;
+                            if (res.data.code == -2) {
+                                this.$message.error(res.data.msg);
+                                return false;
+                            } else if (res.data.code == 0) {
+                                this.$message.error(res.data.msg);
+                                return false;
+                            } else if (res.data.code == 1) {
+                                this.tableData = res.data.data;
+                                // console.log(this.tableData);
+                                //页面加载 判断页面数据是否是八个，以此 是否翻页
+                                if(this.page == 1){
+                                    if (this.tableData.length < 8) {
+                                        this.disabled_downBtn = true;
+                                        this.nextBtn = true;
+                                    }else {
+                                        this.disabled_downBtn = true;
+                                        this.nextBtn = false;
+                                    }
+                                }else {
+                                    if (this.tableData.length < 8) {
+                                        this.disabled_downBtn = false;
+                                        this.nextBtn = true;
+                                    }else {
+                                        this.disabled_downBtn = false;
+                                        this.nextBtn = false;
+                                    }
+                                }
+                            }
+                            // console.log(data);
+                        },
+                        error: function (res) {
+                            console.log('error' + res);
+                        }
+                    })
+                },
+                //我收到的报备获取数据
+                getbuildinguser(){
+                    let data = Object.assign({
+                        url: 'extend/manager/report_building/getBuildingUser',
+                        page: this.new_page,
+                        page_size: this.page_size,
+                        search:this.search_m,
+                    }, this.header);
+                    utils.ajax({
+                        data: data,
+                        success: (res) => {
+                            console.log(res);
+                            this.loading = false;
+                            if (res.data.code == -2) {
+                                this.$message.error(res.data.msg);
+                                return false;
+                            } else if (res.data.code == 0) {
+                                // this.$message.error(res.data.msg);
+                                return false;
+                            } else if (res.data.code == 1) {
+                                this.tableData_new = res.data.data;
+                                // console.log(this.tableData_new);
+                                //页面加载 判断页面数据是否是八个，以此 是否翻页
+                                if(this.new_page == 1){
+                                    if (this.tableData_new.length < 8) {
+                                        this.disabled_downBtn = true;
+                                        this.nextBtn = true;
+                                    }else {
+                                        this.disabled_downBtn = true;
+                                        this.nextBtn = false;
+                                    }
+                                }else {
+                                    if (this.tableData_new.length < 8) {
+                                        this.disabled_downBtn = false;
+                                        this.nextBtn = true;
+                                    }else {
+                                        this.disabled_downBtn = false;
+                                        this.nextBtn = false;
+                                    }
+                                }
+
+                            }
+                            // console.log(data);
+                        },
+                        error: function (res) {
+                            console.log('error' + res);
+                        }
+                    })
+                },
+                //输入框中的筛选功能
+                search(){
+                    if(this.activeName == 'first'){
+                        this.tableData = [];
+                        this.tableData_new = [];
+                        this.issue_report = false;
+                        this.issue_request = true;
+                        this.getCustomers();
+
+                    }else if(this.activeName == 'second'){
+                        this.tableData = [];
+                        this.tableData_new = [];
+                        this.issue_report = true;
+                        this.issue_request = false;
+                        this.getbuildinguser();
+                    }
+                },
+                openDetails(row, column, event) {
+                    event.preventDefault();
+                    row.id = row.id || 0;
+                    if (row.id == 0) {
+                        this.$message.error('数据异常');
+                        return;
+                    }
+                    // this.show = this.show ? false : true;
+                    this.show = true;
+                    var menu = document.querySelector("#menu");
+                    menu.style.left = event.clientX + 'px';
+                    menu.style.top = event.clientY + 'px';
+                },
+                // //我的报备页面 头部的tab切换功能
+                handleClick(tab, event) {
+                    if (tab.name === 'first') {
+                        this.tableData = [];
+                        this.tableData_new = [];
+                        this.issue_report = false;
+                        this.issue_request = true;
+                        this.getCustomers();
+                    } else if (tab.name === 'second') {
+                        this.tableData = [];
+                        this.tableData_new = [];
+                        this.issue_report = true;
+                        this.issue_request = false;
+                        this.getbuildinguser();
+                    }
+                },
+                //上一页
+                prevPage() {
+                    if (this.activeName == 'first') {
+                        if (this.page > 1) {
+                            this.page--;
+                        }
+                        this.getCustomers();
+                    } else if(this.activeName == 'second') {
+                        if (this.new_page > 1) {
+                            this.new_page--;
+                        }
+                        this.getbuildinguser();
+                    }
+
+                    if (this.page == 1 || this.new_page == 1) {
+                        this.disabled_downBtn = true;
+                        this.nextBtn = false;
+                    }
+                },
+                //下一页
+                nextPage() {
+                    if (this.activeName == 'first') {
+                        this.page++;
+                        this.getCustomers();
+                        this.disabled_downBtn = true;
+                    } else {
+                        this.new_page++;
+                        this.getbuildinguser();
+                        this.disabled_downBtn = true;
+                    }
+
+                    if (this.page != 1 || this.new_page != 1) {
+                        this.disabled_downBtn = false;
+                    }
+                    // this.getHouses(this.formHeader.house_type ? this.formHeader.house_type : 1);
+                },
+
+
+            },
+        });
+        //关闭右键菜单
+        window.onclick = function (e) {
+            myvue.$data.show = false;
+        };
+
+    </script>
+</block>
+
+

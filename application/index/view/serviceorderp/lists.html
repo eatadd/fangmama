@@ -1,0 +1,510 @@
+<extend name="base/common" />
+
+<block name="body">
+    <style>
+        .el-header {
+            color: #333;
+            line-height: 60px;
+            text-align: right;
+            font-size: 12px
+        }
+
+        .el-aside {
+            color: #333;
+        }
+
+        #menu {
+            position: absolute;
+        }
+
+        .el-menu {
+            box-shadow: 0 0 5px #ddd;
+            z-index: 99;
+            border: 1px solid #ddd;
+        }
+
+        .el-menu-item {
+            color: #555;
+            border-bottom: 1px solid #f3f3f3;
+        }
+
+        .el-menu-item:focus,
+        .el-menu-item:hover {
+            background-color: #e6e9ed;
+            color: #ff5100
+        }
+
+        a {
+            text-decoration: none
+        }
+
+        .el-menu li {
+            height: 35px;
+            line-height: 35px;
+        }
+    </style>
+    <div id="app" v-hide>
+        <el-container>
+            <el-container>
+                <el-main style="margin-top: -15px;">
+                    <el-table @row-contextmenu="openDetails" @row-dblclick="row_clicks" :data="tableData"
+                        style="width: 100%;border-top:1px solid #eee">
+                        <el-table-column type="selection" width="55">
+                        </el-table-column>
+                        <el-table-column show-overflow-tooltip label="订单编号" prop="sn">
+                        </el-table-column>
+                        <el-table-column show-overflow-tooltip label="需求内容" prop="need[0].house_config">
+                        </el-table-column>
+                        <el-table-column show-overflow-tooltip label="客户姓名" prop="user_nickname">
+                        </el-table-column>
+                        <el-table-column show-overflow-tooltip label="手机号" prop="user_mobile">
+                        </el-table-column>
+                        <!-- <el-table-column
+                            label="需求内容"
+                            width="180">
+                            <template slot-scope="scope">
+                               <p v-for="(v,k) in scope.row.need" :key="k">{{v.house_config}}</p>
+                            </template>
+                        </el-table-column> -->
+                        <el-table-column show-overflow-tooltip label="创建时间" prop="create_time">
+                        </el-table-column>
+                        <!-- <el-table-column label="操作" fixed="right" align="center">
+                                <template slot-scope="scope">
+                                    <el-button size="mini">
+                                        完成服务
+                                    </el-button>
+                                  <el-button type="warning" size="mini" @click.native="showDialog()">
+                                    去评价
+                                  </el-button>
+                                </template>
+                              </el-table-column>  -->
+                    </el-table>
+                </el-main>
+                <el-footer style="text-align: center">
+                    <!-- <el-pagination style="text-align: center" hide-on-single-page background layout="prev, pager, next"
+                        :total="50">
+                    </el-pagination> -->
+                    <el-button type="text" icon="el-icon-arrow-left" size="medium" :disabled="page == 1"
+                        @click="prevPage">上一页</el-button>
+                    <el-button type="text" size="medium" @click="nextPage" :disabled="nextBtn">下一页<i
+                            class="el-icon-arrow-right el-icon--right"></i></el-button>
+
+                </el-footer>
+            </el-container>
+        </el-container>
+        <transition name="el-zoom-in-top">
+            <div id="menu" v-show="show">
+                <el-row class="tac">
+                    <el-col>
+                        <el-menu active-text-color="#000">
+                            <!-- <template v-for="menuItems in menuItem">
+                                <a :href="menuItems.src">
+                                    <el-menu-item>
+                                        <span slot="title">{{menuItems.title}}</span>
+                                    </el-menu-item>
+                                </a>
+                            </template> -->
+
+                        </el-menu>
+                    </el-col>
+                </el-row>
+            </div>
+        </transition>
+        <!-- <el-drawer title="详细信息" :visible.sync="drawer" :direction="direction" :before-close="handleClose">
+
+            <el-row :gutter="20" style="padding-left: 20px;">
+                <el-col :span="8">
+                    <img :src="user.logo" alt="" style="width: 185px"></el-col>
+                <el-col :span="8">
+                    <h3>{{user.nickname}}</h3>
+                    <p>{{user.company}}</p>
+                    <el-col>
+            </el-row>
+        </el-drawer> -->
+        <el-dialog title="订单详情" :visible.sync="dialogFormVisible" width="70%">
+            <template>
+                <el-tabs v-model="activeName" @tab-click="handleClick" v-loading="loading">
+                    <el-tab-pane label="客源信息" name="one">
+                        <el-row>
+                            <el-col :span="8">
+                                <el-image style="width: 150px;height: 150px;" :src="user.logo" fit="fill"></el-image>
+                            </el-col>
+                            <el-col :span="16">
+                                <h3>{{user.nickname}}</h3>
+                                <p>{{user.company || '无'}}</p>
+                                <div style="display: flex;align-items: center;justify-content: space-between;">
+                                    <span>客源电话：{{user.mobile}}</span>
+                                    <el-button type="primary" icon="el-icon-chat-round" @click="Parent_level(room.room_id)">聊天</el-button>
+                                </div>
+                            </el-col>
+                        </el-row>
+                    </el-tab-pane>
+                    <el-tab-pane label="订单需求" name="two">
+                        <template>
+                            <el-table
+                                    :data="need"
+                                    border
+                                    height="250"
+                                    style="width: 100%">
+                                <el-table-column
+                                        fixed
+                                        prop="type_name"
+                                        label="需求类型"
+                                        width="100">
+                                </el-table-column>
+                                <el-table-column
+                                        prop="house_config"
+                                        label="需求内容"
+                                        >
+                                </el-table-column>
+                                <el-table-column
+                                        prop="create_time"
+                                        label="订单日期"
+                                        width="100">
+                                </el-table-column>
+                                <el-table-column
+                                        prop="status_text"
+                                        label="订单状态"
+                                        width="100">
+                                </el-table-column>
+                                <el-table-column
+                                        fixed="right"
+                                        label="操作"
+                                        width="100">
+                                    <template slot-scope="scope">
+                                        <el-button @click="complete_service(scope.row)" v-if="scope.row.status==20" type="text" size="small">完成服务</el-button>
+                                        <el-button @click="evaluate(scope.row)" v-if="scope.row.status==30||scope.row.status==40" type="text" size="small">去评价</el-button>
+                                    </template>
+                                </el-table-column>
+                            </el-table>
+                        </template>
+                    </el-tab-pane>
+
+                </el-tabs>
+
+            </template>
+
+        </el-dialog>
+
+        <el-dialog
+                title="评价"
+                :visible.sync="dialogVisible"
+                width="40%">
+                    <el-rate
+                            v-model="dialogVisible_value"
+                            show-text :texts="texts"
+                            @change="dialogVisible_change">
+                    </el-rate>
+                    <el-tag style="margin-top: 5px;margin-right: 5px;" v-for="item in getReviewTag" @click="Tags(item)" :type="item.xuan==0 ? 'info':'' ">{{item.title}}</el-tag>
+                    <span slot="footer" class="dialog-footer">
+                        <el-button @click="dialogVisible = false">取 消</el-button>
+                        <el-button type="primary" @click="evaluate_click">确 定</el-button>
+                     </span>
+        </el-dialog>
+        <el-dialog
+                title="提示"
+                :visible.sync="complete_state"
+                width="30%">
+            <span>确定完成订单吗?</span>
+             <span slot="footer" class="dialog-footer">
+            <el-button @click="complete_state = false">取 消</el-button>
+            <el-button type="primary" @click="Determine_click()">确 定</el-button>
+          </span>
+        </el-dialog>
+    </div>
+</block>
+<block name="js">
+    <script type="text/javascript">
+        // 传参
+        function Parent_level(room_id){
+            window.top.postMessage({
+                type:1,
+                data:{
+                    room_id:room_id
+                }
+            },'*');
+        }
+
+        let clickTimer = null;
+        let user_data = JSON.parse('{:cache("user_data")}');
+        var myvue = new Vue({
+            el: '#app',
+            data: {
+                tableData: [],
+                value: '',
+                search: '',
+                input2: '',
+                show: false,
+                drawer: false,
+                direction: 'btt',
+                dialogFormVisible: false,
+                activeName: 'one',
+                activeIndex: '1',
+                activeIndex2: '1',
+                user: { logo: "" },
+                page: 1,
+                nextBtn: true,
+                query: { "user_token": user_data.user_token.user_token,store_id:user_data.store_user_info.store_id},
+                loading: true,
+
+                need:[],
+                room:[],
+                dialogVisible:false,
+                dialogVisible_value:'',
+                texts:['差', '一般', '还不错', '很满意', '非常满意,无可挑剔'],
+                getReviewTag:[],
+                evaluate_data:{},
+
+                complete_service_data:{},
+                complete_state:false
+            },
+            created() {
+                this.getOrders();
+            },
+            methods: {
+                getOrders() {
+                    let data = Object.assign({
+                        url: 'extend/manager/ServiceOrder/lists',
+                        store_id: user_data.store_user_info.store_id,
+                        type: 1,
+                        page: this.page,
+                        page_size: 10
+                    }, this.query);
+                    utils.ajax({
+                        data: data,
+                        success: (res) => {
+                           // console.log('success' + JSON.stringify(res.data))
+                            if (res.data.code == -2||res.data.code == 0) {
+                                this.$message.error(res.data.msg);
+                                return false;
+                            }
+                            if (res.data.code == 1) {
+                                let data = res.data.data;
+                                this.tableData = data;
+                                this.nextBtn = data.length == 10 ? false : true;
+                            }
+                        },
+                        error: (res)=>{
+                            console.log('error' + res)
+                        }
+                    })
+                },
+                prevPage() {
+                    this.page--;
+                    this.getOrders();
+                },
+                nextPage() {
+                    this.page++;
+                    this.getOrders();
+                },
+                open() {
+                    this.$confirm('此操作将永久删除该文件, 是否继续?', '提示', {
+                        confirmButtonText: '确定',
+                        cancelButtonText: '取消',
+                        type: 'warning'
+                    }).then(() => {
+                        this.$message({
+                            type: 'success',
+                            message: '删除成功!'
+                        });
+                    }).catch(() => {
+                        this.$message({
+                            type: 'info',
+                            message: '已取消删除'
+                        });
+                    });
+                },
+                openDetails(row, column, event) {
+                    event.preventDefault();
+                    row.id = row.id || 0;
+                    if (row.id == 0) {
+                        this.$message.error('数据异常');
+                        return;
+                    }
+                    // this.show = this.show ? false : true;
+                    this.show = true;
+                    var menu = document.querySelector("#menu");
+                    menu.style.left = event.clientX + 'px';
+                    menu.style.top = event.clientY + 'px';
+                },
+                // row_click(row) {
+                //     console.log('1');
+                //     this.user = {};
+
+                //     if (clickTimer) {
+                //         window.clearTimeout(clickTimer);
+                //         clickTimer = null;
+                //     }
+                //     clickTimer = window.setTimeout( () => {
+                //         // your click process code here
+                //         myvue.$data.drawer = true;
+
+                //     }, 200);
+                // },
+                row_clicks(row) {
+                    if (clickTimer) {
+                        window.clearTimeout(clickTimer);
+                        clickTimer = null;
+                    }
+                    this.loading = true;
+                    let data = Object.assign({
+                        url: 'extend/manager/ServiceOrder/info',
+                        store_id: row.store_id,
+                        order_id: row.id,
+                    }, this.query);
+                    utils.ajax({
+                        data: data,
+                        success: (res) => {
+                            this.loading = false;
+                            // console.log('12121221',JSON.stringify(res.data.data));
+                            // console.log(res.data);
+                            let type_neme = ['买房','买房','租房','出租'];
+                            let status_text = ['已取消','待响应','进行中','等待双向评价','用户已评价','用户已评价','订单已完成'];
+                            for (let i=0;i<res.data.data.need.length;i++){
+                                res.data.data.need[i].type_name = type_neme[res.data.data.need[i].type];
+                                res.data.data.need[i].status_text = status_text[res.data.data.need[i].status/10];
+                            };
+                            // type_name
+                            this.need = res.data.data.need;
+                            this.room = res.data.data.room;
+                            this.user = res.data.data.user;
+                        },
+                        error: function (res) {
+                            console.log('error' + res)
+                        }
+                    })
+                    // your click process code here
+                    this.dialogFormVisible = true;
+                },
+                showDialog() {
+                    this.dialogFormVisible = true;
+                },
+                handleClick(tab, event) {
+                    // console.log(tab, event);
+                },
+
+                // 添加信息
+                complete_service(ret){
+                    console.log(ret);
+                    this.complete_service_data = ret;
+                    this.complete_state = true;
+                },
+                Determine_click(){
+                    let ret= this.complete_service_data;
+                    let data = Object.assign({
+                        url: 'extend/manager/ServiceOrder/completeOrder',
+                        need_id: ret.id,
+                    }, this.query);
+                    utils.ajax({
+                        data: data,
+                        success: (res) => {
+                            console.log(res);
+                            if(res.data.code<1){
+                                this.$message.error(res.data.msg);
+                            }
+                            if(res.data.code==1){
+                                ret.status = 30;
+                                this.$message({
+                                    message: res.data.msg,
+                                    type: 'success',
+                                });
+                                utils.ajax({
+                                    url: 'push/store_to_user_alert',
+                                    data: {
+                                        user_token: this.user.user_token,
+                                        content: '经纪人已完成订单！'
+                                    },
+                                    success: (res) => {
+                                        console.log(JSON.stringify(res));
+                                        if(res.data.code==1){
+                                            console.log(res.data.msg);
+                                        }
+                                    },
+                                    error: function (res) {
+                                        console.log('error' + res)
+                                    }
+                                });
+                            }
+                            this.complete_state = false;
+                        },
+                        error: function (res) {
+                            console.log('error' + res);
+                            this.complete_state = false;
+                        }
+                    });
+                },
+                // 评价
+                evaluate(ret){
+                    this.evaluate_data = ret;
+                    this.dialogVisible=true;
+                },
+                evaluate_click(ret){
+                    this.dialogVisible=false;
+                    let baio =""
+                    for (let i=0;i<this.getReviewTag.length;i++){
+                        if(this.getReviewTag[i].xuan==1){
+                            baio += this.getReviewTag[i].title + ',';
+                        }
+                    };
+                    let data = Object.assign({
+                        url: 'extend/manager/Comment/commentUser',
+                        service_order_need_id:this.evaluate_data.id,
+                        tag: baio.substr(0, baio.length - 1),
+                        star:this.dialogVisible_value,
+                    }, this.query);
+                    utils.ajax({
+                        data: data,
+                        success: (res) => {
+                            console.log(res);
+                            if(res.data.code<1){
+                                this.$message.error(res.data.msg);
+                            }
+                            if(res.data.code==1){
+                                this.evaluate_data.status = 50;
+                                this.dialogFormVisible= false;
+                                this.$message({
+                                    message: res.data.msg,
+                                    type: 'success',
+                                });
+                            }
+                        },
+                        error: function (res) {
+                            console.log('error' + res)
+                        }
+                    });
+                },
+                // 改变分数
+                dialogVisible_change(ret){
+                    let data = Object.assign({
+                        url: 'extend/manager/comment/getReviewTag',
+                        star: ret,
+                        item: 2
+                    }, this.query);
+                    utils.ajax({
+                        data: data,
+                        success: (res) => {
+                            console.log(res);
+                            if(res.data.code==1){
+                                for (let i=0;i<res.data.data.length;i++){
+                                    res.data.data[i].xuan = 0;
+                                }
+                                this.getReviewTag = res.data.data
+                            }
+                        },
+                        error: function (res) {
+                            console.log('error' + res)
+                        }
+                    });
+                },
+                Tags(ret){
+                    console.log(ret);
+                    ret.xuan = (ret.xuan==1) ? 0:1;
+                }
+            },
+        });
+        //关闭右键菜单
+        window.onclick = function (e) {
+            myvue.$data.show = false;
+        }
+    </script>
+</block>

@@ -1,0 +1,158 @@
+<extend name="base/common"/>
+
+<block name="body">
+    <style>
+        .el-form{
+            margin: 10px;
+        }
+    </style>
+    <div id="app">
+        <el-form ref="form" :model="form" label-width="80px" v-loading="loading">
+            <template v-for="(fields, k) in field">
+                <template v-if="fields.type == 'text'">
+                    <el-form-item :label="fields.title">
+                        <el-input v-model="form[fields.field]"></el-input>
+                    </el-form-item>
+                </template>
+                <template v-else-if="fields.type == 'region'">
+                    <el-form-item :label="fields.title">
+                        <el-select v-model="form[fields.field]" placeholder="请选择">
+                            <template v-for="values in fields.value">
+                                <el-option :label="values.title" :value="values.value"></el-option>
+                            </template>
+                        </el-select>
+                    </el-form-item>
+                </template>
+                <template v-else-if="fields.type == 'date'">
+                    <el-form-item :label="fields.title">
+                        <el-date-picker
+                                v-model="form[fields.field]"
+                                type="date"
+                                placeholder="选择日期">
+                        </el-date-picker>
+                    </el-form-item>
+                </template>
+                <template v-else-if="fields.type == 'textarea'">
+                    <el-form-item :label="fields.title">
+                        <el-input
+                                :autosize="{ minRows: 4}"
+                                type="textarea"
+                                :rows="4"
+                                v-model="form[fields.field]">
+                        </el-input>
+                    </el-form-item>
+                </template>
+                <template v-else-if="fields.type == 'upload_picture'">
+                    <el-form-item :label="fields.title">
+                        <el-upload
+                                action="https://jsonplaceholder.typicode.com/posts/"
+                                list-type="picture-card"
+                                :on-preview="handlePictureCardPreview"
+                                :on-remove="handleRemove">
+                            <i class="el-icon-plus"></i>
+                        </el-upload>
+                        <el-dialog :visible.sync="dialogVisible">
+                            <img width="100%" :src="dialogImageUrl" alt="">
+                        </el-dialog>
+                    </el-form-item>
+                </template>
+            </template>
+            <el-form-item>
+                <el-button type="primary" @click="onSubmit">新增</el-button>
+                <el-button @click="prev">取消</el-button>
+            </el-form-item>
+        </el-form>
+    </div>
+</block>
+<block name="js">
+    <script type="text/javascript">
+        let data = JSON.parse('{$data|raw}');
+        // let form={};
+        // for (i = 0; i < data.field; i++){
+        //     form[data.field[i].field] = ''
+        // }
+        // console.log(form);
+        var myvue = new Vue({
+            el: '#app',
+            data: {
+                form: {},
+                field: data.field,
+                dialogImageUrl: '',
+                dialogVisible: false,
+                loading: false
+            },
+            created(){
+                // console.log(JSON.stringify(this.form));
+                // 
+                // utils.ajax({
+                //     data:{url:'extend/manager/Store/selfStoreList',
+                //         user_token:'eigBCgTKjQTQr4x1Lkm0sEmBBxIpOQZl',
+                //     },
+                //     success: (res) => {
+                //         console.log('success'+JSON.stringify(res))
+                //         // this.tableData = res.data.data;
+                //         let data = [];
+                //         for(let item of res.data.data) {
+                //             data.push({
+                //                 title: item.store_info.title,
+                //                 value: item.store_id
+                //             })
+                //         }
+                //         this.field[6].value = data
+
+
+                //     },
+                //     error:function (res) {
+                //         console.log('error'+res)
+                //     }
+                // })
+            },
+            methods: {
+                handleRemove(file, fileList) {
+                    console.log(file, fileList);
+                },
+                handlePictureCardPreview(file) {
+                    this.dialogImageUrl = file.url;
+                    this.dialogVisible = true;
+                },
+                onSubmit(file) {
+                    this.loading = true
+                    let data = Object.assign({url:'extend/manager/Customer/add',
+                                        user_token:'eigBCgTKjQTQr4x1Lkm0sEmBBxIpOQZl',
+                                    }, this.form);
+                    // console.log(JSON.stringify(data));
+                    utils.ajax({
+                        data: data,
+                        success: (res) => {
+                            // console.log(res.data);
+
+                            // this.$message({
+                            //     type: 'info',
+                            //     message: res.data.msg
+                            // });
+                            this.loading = false;
+                            if(res.data.code) {
+                                this.$message({
+                                    message: res.data.msg,
+                                    type: 'success'
+                                });
+                                this.form = {};  // 如果添加成功，表单就清空
+
+                            } else {
+                                this.$message.error(res.data.msg);
+                            }
+                        },
+                        error:function (res) {
+                            console.log('error'+res)
+                        }
+                    })
+                },
+                prev(){
+                    window.location.href='{:url("lists")}';
+                },
+            }
+        });
+    </script>
+</block>
+
+

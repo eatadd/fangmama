@@ -1,0 +1,502 @@
+<extend name="base/common"/>
+
+<block name="body">
+    <style>
+        #app {
+            margin: 10px 0
+        }
+        .padding-l-r-20{
+            padding: 0 20px;
+        }
+        .headers{
+            padding-bottom: 20px;
+            padding-top: 10px;
+        }
+        .txt_color{
+            color:red;
+        }
+    </style>
+    <div id="app" v-hide>
+        <div class="padding-l-r-20">
+            <div class="headers">
+                <div style="float: left;">
+
+                    <el-button type="primary" @click="handleForm()" icon="el-icon-upload2" size="small">
+                        导出
+                    </el-button>
+                </div>
+                <div style="text-align: right">
+                    <template>
+                        <el-select v-model="build_id" placeholder="请选择" @change="option_build">
+                            <el-option v-for="item in build"
+                                       :key="item.id"
+                                       :label="item.title"
+                                       :value="item.id">
+                            </el-option>
+                        </el-select>
+                    </template>
+                    <template>
+                        <el-select v-model="unit_id" placeholder="请选择" @change="option_unit_id" style="padding-left: 20px;">
+                            <el-option v-for="item in unit"
+                                       :key="item.id"
+                                       :label="item.title"
+                                       :value="item.id">
+                            </el-option>
+                        </el-select>
+                    </template>
+                </div>
+            </div>
+            <el-table @row-contextmenu="openDetails" :data="tableData"
+                      style="width: 100%;border-top:1px solid #eee" v-if="Load_display">
+                <el-table-column type="selection" width="55">
+                </el-table-column>
+                <el-table-column show-overflow-tooltip label="门牌号" prop="index.title">
+                </el-table-column>
+                <el-table-column show-overflow-tooltip label="面积" prop="house_size">
+                </el-table-column>
+                <el-table-column show-overflow-tooltip label="阳台" prop="balcony">
+                </el-table-column>
+                <el-table-column show-overflow-tooltip label="车位" prop="parking">
+                </el-table-column>
+                <el-table-column show-overflow-tooltip label="车库" prop="carbarn">
+                </el-table-column>
+                <el-table-column show-overflow-tooltip label="储藏室" prop="storeroom">
+                </el-table-column>
+                <el-table-column show-overflow-tooltip label="状态" prop="">
+                    <template slot-scope="scope" >
+                        <div :class=" scope.row.status=='已售' ? 'txt_color' :'' ">
+                            {{scope.row.status}}
+                        </div>
+                    </template>
+                </el-table-column>
+                <el-table-column
+                        fixed="right"
+                        label="操作"
+                        width="100">
+                    <template slot-scope="scope">
+                        <el-button @click="confirms(scope.row)" type="text" size="small">添加签约</el-button>
+                    </template>
+                </el-table-column>
+            </el-table>
+
+            <div id="menu" v-show="show">
+                <el-row class="tac">
+                    <el-col>
+                        <el-menu active-text-color="#000">
+                            <!-- <template v-for="menuItems in menuItem">
+                                <a :href="menuItems.src">
+                                    <el-menu-item>
+                                        <span slot="title">{{menuItems.title}}</span>
+                                    </el-menu-item>
+                                </a>
+                            </template> -->
+
+                        </el-menu>
+                    </el-col>
+                </el-row>
+            </div>
+        </div>
+
+
+
+        <el-dialog width="60%"
+                title="签约"
+                :visible.sync="centerDialogVisible"
+                width="30%"
+                >
+
+            <span slot="footer" class="dialog-footer">
+
+                <el-form ref="form" :model="form" label-width="80px">
+                  <el-form-item label="签约客户">
+                    <el-select v-model="form.customer_id" placeholder="请选择活动区域">
+                        <el-option v-for="item in listNoPages"
+                                   :key="item.id"
+                                   :label="item.name"
+                                   :value="item.id">
+                        </el-option>
+                    </el-select>
+                  </el-form-item>
+                    <el-form-item label="签约价格">
+                    <el-input v-model="form.money" style="width: 220px" placeholder="单位:元"></el-input>
+                  </el-form-item>
+
+                   <el-form-item label="签约进度">
+                    <el-select v-model="form.step" placeholder="请选择活动区域">
+
+                      <el-option v-for="item in CustomerAndSignOptions"
+                                 :key="item.id"
+                                 :label="item.title"
+                                 :value="item.id">
+                        </el-option>
+                    </el-select>
+                  </el-form-item>
+
+                  <el-form-item label="签约时间">
+                    <el-col :span="11">
+                      <el-date-picker type="date" placeholder="选择日期" v-model="form.date1" style="width: 100%;"></el-date-picker>
+                    </el-col>
+                    <el-col class="line" :span="2" style="text-align: center">-</el-col>
+                    <el-col :span="11">
+                      <el-time-picker placeholder="选择时间" v-model="form.date2" style="width: 100%;"></el-time-picker>
+                    </el-col>
+                  </el-form-item>
+
+                    <el-button @click="centerDialogVisible = false">取 消</el-button>
+                    <el-button type="primary" @click="onSubmit">确 定</el-button>
+                </el-form>
+
+
+            </span>
+        </el-dialog>
+
+
+        <div style="padding-top: 10px">
+            <el-footer style="text-align: center">
+                <!-- <el-pagination style="text-align: center" hide-on-single-page background layout="prev, pager, next"
+                    :total="50">
+                </el-pagination> -->
+                <el-button type="text" icon="el-icon-arrow-left" size="medium" :disabled="page == 1"
+                           @click="prevPage">上一页</el-button>
+                <el-button type="text" size="medium" @click="nextPage" :disabled="nextBtn">下一页<i
+                        class="el-icon-arrow-right el-icon--right"></i></el-button>
+
+            </el-footer>
+        </div>
+
+    </div>
+
+
+
+
+</block>
+<block name="js">
+    <script type="text/javascript">
+        let data = JSON.parse('{$data|raw}');
+        let user_data = JSON.parse('{:cache("user_data")}');
+        var myvue = new Vue({
+            el: '#app',
+            data: {
+                page: 1,
+                nextBtn: true,
+                header: {user_token: user_data.user_token.user_token, store_id: user_data.store_user_info.store_id},
+
+
+                Load_display: false,
+                show: false,
+
+                tableData: [],
+                // 筛选
+                build_id:'',
+                unit_id:'',
+                build:[],
+                unit:[],
+                // 客源列表
+                listNoPages:[],
+                // 进度
+                CustomerAndSignOptions:[],
+
+                centerDialogVisible: false,
+                form: {
+                    customer_id:'',
+                    money:'',
+                    sign_time:'',
+                    step:'',
+                    house_id:'',
+                    date1:'',
+                    date2:''
+                },
+
+                // 导出表
+                tableData_new:[]
+            },
+            created() {
+                let data = Object.assign({
+                    url: 'extend/manager/House/soldCharts',
+                    page: this.page,
+                    // build_id:this.build_id,
+                    // unit_id:this.unit_id,
+                }, this.header);
+                this.getCustomers(data);
+                this.listNoPage();
+                this.CustomerAndSignOption();
+            },
+            methods: {
+                // 获取楼栋房屋列表
+                getCustomers(data) {
+                    // console.log(data);
+                    utils.ajax({
+                        data: data,
+                        success: (res) => {
+                            console.log( res.data)
+                            if (res.data.code == -2 || res.data.code == 0) {
+                                this.$message.error(res.data.msg);
+                                return false;
+                            }
+                            if (res.data.code == 1) {
+                                let data = res.data.data;
+                                let tableData_new = this.tableData_new;
+                                for (var i=0;i<data.house.length;i++){
+                                    data.house[i].balcony = (data.house[i].balcony==1)? '有':'无';
+                                    data.house[i].parking = (data.house[i].parking==1)? '有':'无';
+                                    data.house[i].carbarn = (data.house[i].carbarn==1)? '有':'无';
+                                    data.house[i].storeroom = (data.house[i].storeroom==1)? '有':'无';
+                                    data.house[i].status = (data.house[i].status==30)? '保留':(data.house[i].status==20)? '已售': '未售';
+
+
+                                    tableData_new.push({
+                                        'title' :data.house[i].index.title ,
+                                        'house_size':data.house[i].house_size,
+                                        'balcony':data.house[i].balcony,
+                                        'parking':data.house[i].parking,
+                                        'carbarn':data.house[i].carbarn,
+                                        'storeroom':data.house[i].storeroom,
+                                        'status':data.house[i].status
+                                    });
+                                };
+                                this.tableData_new = tableData_new;
+                                for (var i=0;i<data.build.length;i++){
+                                    let builds= data.build[i];
+                                    builds.title = builds.title+'栋';
+                                };
+                                this.tableData = data.house;
+                                this.build = data.build
+                                this.nextBtn = data.length == 10 ? false : true;
+                            }
+                            this.Load_display = true;
+                        },
+                        error: (res) => {
+                            this.Load_display = true;
+                            console.log('error' + res)
+                        }
+                    });
+                },
+                // 导出
+                handleForm(){
+                    var tableData_new = this.tableData_new;
+                    //列标题，逗号隔开，每一个逗号就是隔开一个单元格
+                    let str = `门牌号,面积,阳台,车位,车库,储藏室,状态\n`;
+                    //增加\t为了不让表格显示科学计数法或者其他格式
+                    for (let i = 0; i < tableData_new.length; i++) {
+                        for (let item in tableData_new[i]) {
+                            str += `${tableData_new[i][item] + '\t'},`;
+                        }
+                        str += '\n';
+                    }
+                    //encodeURIComponent解决中文乱码
+                    let uri = 'data:text/csv;charset=utf-8,\ufeff' + encodeURIComponent(str);
+                    //通过创建a标签实现
+                    let link = document.createElement("a");
+                    link.href = uri;
+                    //对下载的文件命名
+                    link.download = "销控表.csv";
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                },
+                prevPage() {
+                    let data = Object.assign({
+                        url: 'extend/manager/House/soldCharts',
+                        page: this.page--,
+                        // build_id:this.build_id,
+                        // unit_id:this.unit_id,
+                    }, this.header);
+                    this.getCustomers(data);
+                },
+                nextPage() {
+                    let data = Object.assign({
+                        url: 'extend/manager/House/soldCharts',
+                        page: this.page++,
+                        // build_id:this.build_id,
+                        // unit_id:this.unit_id,
+                    }, this.header);
+                    this.getCustomers(data);
+                },
+                // 获取客源列表
+                listNoPage(){
+                    let data = Object.assign({
+                        url: 'extend/manager/Customer/listNoPage',
+                    }, this.header);
+                    utils.ajax({
+                        data: data,
+                        success: (res) => {
+                            if (res.data.code == -2) {
+                                this.$message.error(res.data.msg);
+                                return false;
+                            }
+                            if (res.data.code == 1) {
+                                let data = res.data.data;
+                                // console.log(data);
+                                this.listNoPages = data;
+                            }
+                        },
+                        error: (res) => {
+                            console.log('error' + res)
+                        }
+                    });
+                },
+                // 获取签约进度接口
+                CustomerAndSignOption(){
+                    let data = Object.assign({
+                        url: 'extend/manager/HouseSign/CustomerAndSignOption',
+                        house_type_id:1,
+                    }, this.header);
+                    utils.ajax({
+                        data: data,
+                        success: (res) => {
+                            if (res.data.code == -2) {
+                                this.$message.error(res.data.msg);
+                                return false;
+                            }
+                            if (res.data.code == 1) {
+                                let data = res.data.data;
+                                // console.log(data);
+                                this.CustomerAndSignOptions = data.options;
+                            }
+                        },
+                        error: (res) => {
+                            console.log('error' + res)
+                        }
+                    });
+                },
+                confirms(ret){
+                    // console.log(ret);
+                    this.form.house_id = ret.id;
+                    // 清空
+                    this.form.customer_id = '';
+                    this.form.money = '';
+                    this.form.step = '';
+                    this.form.date1 = '';
+                    this.form.date2 = '';
+                    // 弹出
+                    this.centerDialogVisible = true;
+                },
+                // 签约
+                onSubmit(){
+                    let a = new Date(this.form.date1);
+                    let d = new Date(this.form.date2);
+                    let resDate = a.getFullYear() + '-' + (a.getMonth() + 1) + '-' + a.getDate() + ' ' + d.getHours() + ':' + d.getMinutes() + ':' + d.getSeconds();
+                    this.form.sign_time = resDate;
+                    // this.centerDialogVisible = false;
+                    let data = Object.assign({
+                        url: 'extend/manager/HouseSign/buildSign',
+                    }, this.header);
+                    let datas = Object.assign(data, this.form);
+                    if(!datas.money){
+                        this.$message.error('请填写价格');
+                        return;
+                    }
+                    if(!datas.step){
+                        this.$message.error('请填写签约进度');
+                        return;
+                    }
+                    if(!(a instanceof Date && !isNaN(a.getTime()))){
+                        this.$message.error('请选择日期');
+                        return;
+                    }
+                    if(!(d instanceof Date && !isNaN(d.getTime()))){
+                        this.$message.error('请选择时间');
+                        return;
+                    }
+                    utils.ajax({
+                        data: datas,
+                        success: (res) => {
+                            console.log( res.data);
+                            if (res.data.code == -2 ||res.data.code == 0) {
+                                this.$message.error(res.data.msg);
+                                return false;
+                            }
+                            if (res.data.code == 1) {
+                                this.$message.success(res.data.msg);
+                            }
+                            this.centerDialogVisible = false;
+                        },
+                        error: (res) => {
+                            console.log('error' + res)
+                            this.centerDialogVisible = false;
+                        }
+                    });
+                },
+                // 筛选
+                option_build(){
+                    // console.log(this.build_id);
+                    this.page = 1;
+                    this.unit_id = '';
+                    let data = Object.assign({
+                        url: 'extend/manager/House/soldCharts',
+                        page: this.page,
+                        build_id:this.build_id,
+                        // unit_id:this.unit_id,
+                    }, this.header);
+                    this.getCustomers(data);
+                    let datas = Object.assign({
+                        url: 'extend/manager/House/getUnitList',
+                        build_id:this.build_id,
+                    }, this.header);
+                    this.getUnitList(datas);
+                },
+                getUnitList(data) {
+                    utils.ajax({
+                        data: data,
+                        success: (res) => {
+                            console.log( res.data);
+                            if (res.data.code == -2) {
+                                this.$message.error(res.data.msg);
+                                return false;
+                            }
+                            if (res.data.code == 1) {
+                                let data = res.data.data;
+                                for (var i=0;i<data.length;i++){
+                                    data[i].title = data[i].title+'单元'
+                                };
+                                this.unit = data;
+                            }
+                            this.Load_display = true;
+                        },
+                        error: (res) => {
+                            this.Load_display = true;
+                            console.log('error' + res)
+                        }
+                    });
+                },
+                // 单元筛选
+                option_unit_id(){
+                    // console.log(this.unit_id);
+                    this.page = 1;
+                    let data = Object.assign({
+                        url: 'extend/manager/House/soldCharts',
+                        page: this.page,
+                        build_id:this.build_id,
+                        unit_id:this.unit_id,
+                    }, this.header);
+                    this.getCustomers(data);
+                },
+                openDetails(row, column, event) {
+                    event.preventDefault();
+                    row.id = row.id || 0;
+                    if (row.id == 0) {
+                        this.$message.error('数据异常');
+                        return;
+                    }
+                    // this.show = this.show ? false : true;
+                    this.show = true;
+                    var menu = document.querySelector("#menu");
+                    menu.style.left = event.clientX + 'px';
+                    menu.style.top = event.clientY + 'px';
+                },
+                formatter(row, column) {
+                    return row.address;
+                },
+                filterTag(value, row) {
+                    return row.tag === value;
+                },
+                filterHandler(value, row, column) {
+                    const property = column['property'];
+                    return row[property] === value;
+                }
+            }
+        });
+    </script>
+</block>
+
+

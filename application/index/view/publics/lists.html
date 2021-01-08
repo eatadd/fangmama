@@ -1,0 +1,250 @@
+<extend name="base/common"/>
+
+<block name="body">
+    <style>
+        .el-header {
+            color: #333;
+            line-height: 60px;
+            text-align: right;
+            font-size: 12px
+        }
+
+        .el-aside {
+            color: #333;
+        }
+
+        #menu {
+            position: absolute;
+        }
+
+        .el-menu {
+            box-shadow: 0 0 5px #ddd;
+            z-index: 99;border: 1px solid #ddd;
+        }
+        .el-menu-item{color:#555; border-bottom: 1px solid #f3f3f3; }
+        .el-menu-item:focus, .el-menu-item:hover {
+            background-color: #e6e9ed;color:#ff5100
+        }
+
+        a {
+            text-decoration: none
+        }
+
+        .el-menu li {
+            height: 35px;
+            line-height: 35px;
+        }
+    </style>
+    <div id="app" v-hide>
+        <el-container>
+            <el-container>
+                <el-header
+                        height="100px">
+                    <el-row>
+                        <el-col :span="5">
+                            <div class="grid-content bg-purple-dark">
+                                <div style="float: left;">
+
+                                    <a href="{:url('add')}" v-show="add_btn">
+                                        <el-button type="primary" icon="el-icon-plus" size="small"></el-button>
+                                    </a>
+                                    <el-button v-show="add_btn" type="danger" icon="el-icon-delete" size="small"
+                                               @click="open"></el-button>
+                                </div>
+                            </div>
+                        </el-col>
+                        <el-col :span="19" style="float: right">
+                            <el-row>
+                                <el-col :span="24">
+                                    <div style="float: right;">
+                                        <el-input
+                                                size="small"
+                                                placeholder="请输入搜索内容"
+                                                prefix-icon="el-icon-search"
+                                                v-model="input2">
+                                        </el-input>
+                                    </div>
+                                </el-col>
+                                <el-col :span="24">
+                                    <div style="float: right; margin-top: -15px">
+                                        <el-date-picker
+                                                size="small"
+                                                v-model="value"
+                                                type="daterange"
+                                                range-separator="至"
+                                                start-placeholder="开始日期"
+                                                end-placeholder="结束日期">
+                                        </el-date-picker>
+                                    </div>
+                                </el-col>
+                            </el-row>
+                        </el-col>
+                    </el-row>
+                </el-header>
+                <el-main style="margin-top: -15px;">
+                    <el-table
+                            @row-contextmenu="openDetails"
+                            @row-dblclick="row_clicks"
+                            @row-click="row_click"
+                            :data="tableData.filter(data => !search || data.name.toLowerCase().includes(search.toLowerCase()))"
+                            style="width: 100%;border-top:1px solid #eee">
+                        <el-table-column
+                                type="selection"
+                                width="55">
+                        </el-table-column>
+                        <template v-for="fields in field">
+                            <el-table-column
+                                    show-overflow-tooltip
+                                    :label="fields.label"
+                                    :prop="fields.prop">
+                            </el-table-column>
+                        </template>
+                    </el-table>
+                </el-main>
+                <el-footer>
+                    <el-pagination style="text-align: center"
+                                   hide-on-single-page
+                                   background
+                                   layout="prev, pager, next"
+                                   :total="50">
+                    </el-pagination>
+                </el-footer>
+            </el-container>
+        </el-container>
+        <transition name="el-zoom-in-top">
+            <div id="menu" v-show="show">
+                <el-row class="tac">
+                    <el-col>
+                        <el-menu active-text-color="#000">
+                            <template v-for="menuItems in menuItem">
+                                <a :href="menuItems.src">
+                                    <el-menu-item>
+                                        <span slot="title">{{menuItems.title}}</span>
+                                    </el-menu-item>
+                                </a>
+                            </template>
+
+                        </el-menu>
+                    </el-col>
+                </el-row>
+            </div>
+        </transition>
+        <el-drawer
+                title="详细信息"
+                :visible.sync="drawer"
+                :direction="direction">
+            <span>我来啦!</span>
+        </el-drawer>
+        <el-dialog title="更新信息" :visible.sync="dialogFormVisible" width="70%">
+            <template>
+                <el-tabs v-model="activeName" @tab-click="handleClick">
+                    <el-tab-pane label="基本信息" name="one">基本信息</el-tab-pane>
+                    <el-tab-pane label="私密信息" name="two">私密信息</el-tab-pane>
+                    <el-tab-pane label="房源跟进" name="three">房源跟进</el-tab-pane>
+                    <el-tab-pane label="房源签约" name="for">房源签约</el-tab-pane>
+                    <el-tab-pane label="房源待看" name="five">房源待看</el-tab-pane>
+                    <el-tab-pane label="日志记录" name="six">日志记录</el-tab-pane>
+                </el-tabs>
+            </template>
+        </el-dialog>
+    </div>
+</block>
+<block name="js">
+
+    <script type="text/javascript">
+        let data = JSON.parse('{$data|raw}');
+        let clickTimer = null;
+        var myvue = new Vue({
+            el: '#app',
+            data: {
+                tableData: data.tableData,
+                value: '',
+                search: '',
+                input2: '',
+                show: false,
+                menuItem: data.menuItem,
+                field: data.field,
+                add_btn: data.del_btn,
+                del_btn: data.del_btn,
+                drawer: false,
+                direction: 'btt',
+                dialogFormVisible: false,
+                activeName: 'one',
+            },
+            methods: {
+                open() {
+                    this.$confirm('此操作将永久删除该文件, 是否继续?', '提示', {
+                        confirmButtonText: '确定',
+                        cancelButtonText: '取消',
+                        type: 'warning'
+                    }).then(() => {
+                        this.$message({
+                            type: 'success',
+                            message: '删除成功!'
+                        });
+                    }).catch(() => {
+                        this.$message({
+                            type: 'info',
+                            message: '已取消删除'
+                        });
+                    });
+                },
+                openDetails(row, column, event) {
+                    event.preventDefault();
+                    row.id = row.id || 0;
+                    if (row.id == 0) {
+                        this.$message.error('数据异常');
+                        return;
+                    }
+                    // this.show = this.show ? false : true;
+                    this.show = true;
+                    var menu = document.querySelector("#menu");
+                    menu.style.left = event.clientX + 'px';
+                    menu.style.top = event.clientY + 'px';
+                },
+                row_click(){
+                    if (clickTimer) {
+                        window.clearTimeout(clickTimer);
+                        clickTimer = null;
+                    }
+                    clickTimer = window.setTimeout(function() {
+                        // your click process code here
+                        myvue.$data.drawer = true;
+                    }, 200);
+                },
+                row_clicks(){
+                    if (clickTimer) {
+                        window.clearTimeout(clickTimer);
+                        clickTimer = null;
+                    }
+                    // your click process code here
+                    this.dialogFormVisible=true;
+                },
+                handleClick(tab, event) {
+                    console.log(tab, event);
+                },
+            },
+        });
+        //关闭右键菜单
+        window.onclick = function (e) {
+            myvue.$data.show = false;
+        }
+        let x = utils.ajax({
+            data:{url:'extend/manager/ServiceOrder/lists',
+                user_token:'eigBCgTKjQTQr4x1Lkm0sEmBBxIpOQZl',
+                store_id: 1,
+                type: 1, 
+                page: 1, 
+                page_size: 10
+            },
+            success:function (res) {
+                console.log('success'+JSON.stringify(res.data))
+            },
+            error:function (res) {
+                console.log('error'+res)
+            }
+        })
+    </script>
+</block>
+
+

@@ -1,0 +1,894 @@
+<extend name="base/common"/>
+<!--2019/10/28 狸猫页面，我的合作   我的联卖-->
+<block name="body">
+
+    <style>
+        .el-header {
+            color: #333;
+            line-height: 60px;
+            text-align: right;
+            font-size: 12px
+        }
+
+        .el-aside {
+            color: #333;
+        }
+
+        #menu {
+            position: absolute;
+        }
+
+        .el-menu {
+            box-shadow: 0 0 5px #ddd;
+            z-index: 99;
+            border: 1px solid #ddd;
+        }
+
+        .el-menu-item {
+            color: #555;
+            border-bottom: 1px solid #f3f3f3;
+        }
+
+        .el-menu-item:focus,
+        .el-menu-item:hover {
+            background-color: #e6e9ed;
+            color: #ff5100
+        }
+
+        a {
+            text-decoration: none
+        }
+
+        .el-menu li {
+            height: 35px;
+            line-height: 35px;
+        }
+
+        /***2019/10/14 limao公海列表*/
+
+
+        * {
+            list-style: none;
+            text-decoration: none;
+        }
+
+        .share_hosue_all {
+            padding: 0px;
+        }
+
+        .share_house_list_txt {
+            overflow: hidden !important;
+            white-space: nowrap !important;
+            text-overflow: ellipsis !important;
+            word-break: normal !important;
+            /*line-height: 1.7;*/
+        }
+
+        .share_house_card {
+            background-color: #fff;
+            /*padding: 0 5px 1px;*/
+            font-size: 0.85rem;
+            box-shadow: 1px 1px 5px #999;
+        }
+
+        p {
+            margin: 0px;
+        }
+
+        .share_house_p {
+            padding: 5px 0;
+
+        }
+
+        .share_hous_divall {
+            padding: 5px 10px 10px;
+        }
+
+        .share_house_pay {
+            font-size: 0.95rem;
+            color: #FF5501;
+        }
+
+        .share_house_money_col {
+            color: #999;
+        }
+
+        .share_house_name_ti {
+            padding: 3px 0;
+        }
+
+        .time {
+            font-size: 13px;
+            color: #999;
+        }
+
+        .bottom {
+            margin-top: 13px;
+            line-height: 12px;
+        }
+
+        .button {
+            padding: 0;
+            float: right;
+        }
+
+        .image {
+            width: 100%;
+            height: 160px;
+            display: block;
+        }
+
+        @media screen and (min-width: 970px) {
+            .image {
+                height: 200px;
+            }
+
+            .share_house_mar {
+                width: 21.7% !important;
+            }
+        }
+
+        .clearfix:before,
+        .clearfix:after {
+            display: table;
+            content: "";
+        }
+
+        .clearfix:after {
+            clear: both
+        }
+
+        .share_house_mar {
+            margin: 5px 5px 5px 5px;
+            font-size: 0.85rem;
+            width: 23%;
+        }
+
+        .index_head_tab {
+            width: 35%;
+            position: absolute;
+            right: 24%;
+            /*margin: 0 auto;*/
+        }
+
+
+        .el-tabs__content {
+            display: none;
+        }
+
+        .list_img_none {
+            text-align: center;
+        }
+
+        .el-icon-picture-outline {
+            font-size: 35px;
+
+        .el-tabs__nav-wrap::after {
+            width: 290px;
+            left: -15px;
+        }
+
+        color: #ddd
+
+        ;
+        }
+        .el-image {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-bottom: 1px solid #ddd;
+        }
+
+        /*2019/11/8 狸猫重构我的合作页面样式*/
+        /*.el-table .cell {*/
+        /*    text-align: center;*/
+        /*}*/
+
+        .el-tag.el-tag--success {
+            background-color: #FF5501;
+            border-color: #FF5501;
+            color: #fff;
+        }
+
+        .block {
+            padding: 15px 0;
+        }
+
+        .el-input--small .el-input__inner {
+            height: 40px;
+            line-height: 40px;
+        }
+    </style>
+    <div id="app" v-hide>
+        <el-container>
+            <el-container v-loading="loading">
+                <el-header height="70px">
+                    <el-row>
+                        <el-col :span="24">
+                            <template>
+                                <el-tabs v-model="activeName" @tab-click="handleClick">
+                                    <el-tab-pane label="我发出的合作请求" name="first"></el-tab-pane>
+                                    <el-tab-pane label="我收到的合作请求" name="second"></el-tab-pane>
+                                </el-tabs>
+                            </template>
+                        </el-col>
+
+                        <div style="position:absolute;right: 0;">
+
+                            <div style="float: right;">
+                                <el-input size="small" placeholder="请输入房源标题搜索" prefix-icon="el-icon-search"
+                                          v-model="search_um" id="input" @keyup.enter.native="search"
+                                          @keyup.delete.native="search">
+                                </el-input>
+                            </div>
+
+                            <div style="float: right;margin-right: 10px;">
+                                <el-input size="small" placeholder="请输入用户昵称搜索" prefix-icon="el-icon-search"
+                                          v-model="search_nick" id="input" @keyup.enter.native="search_name"
+                                          @keyup.delete.native="search_name">
+                                </el-input>
+                            </div>
+
+                        </div>
+                    </el-row>
+                </el-header>
+                <el-main style="margin-top: -15px;">
+                    <!--我发出的合作请求-->
+                    <template v-if="issue_request">
+                        <template>
+                            <el-tabs v-model="issue_activeName" @tab-click="iss_handleClick">
+                                <el-tab-pane label="新房" name="1">新房</el-tab-pane>
+                                <el-tab-pane label="二手房" name="2">二手房</el-tab-pane>
+                                <el-tab-pane label="租房" name="3">租房</el-tab-pane>
+                            </el-tabs>
+                        </template>
+
+                        <el-table
+                                :data="share_house"
+                                @cell-mouse-enter="handledbClick"
+                                style="width: 100%;"
+                                @row-dblclick="hous_share(house_share_id,house_type_id)">
+                            <el-table-column
+                                    prop="house_resold.title"
+                                    label="房源标题"
+                            >
+                            </el-table-column>
+                            <el-table-column
+                                    prop="user_profile.nickname"
+                                    label="经纪人"
+                            >
+                            </el-table-column>
+                            <el-table-column
+                                    prop="store.title"
+                                    label="所属门店"
+                            >
+                            </el-table-column>
+                            <el-table-column
+                                    prop="store_uers_mobile"
+                                    label="电话号码"
+                            >
+                            </el-table-column>
+                            <!--<el-table-column-->
+                                    <!--prop="user_profile.sex"-->
+                                    <!--label="经纪人性别"-->
+                            <!--&gt;-->
+                            <!--</el-table-column>-->
+                            <el-table-column
+                                    prop="status_text"
+                                    label="合作状态">
+                            </el-table-column>
+                            <el-table-column
+                                    prop="create_time"
+                                    label="请求时间"
+                            >
+                            </el-table-column>
+                            <!--点击评价-->
+                            <el-table-column prop="tag"
+                                             label="评价"
+                                             width="100"
+                                             :filters="[{ text: '点击评价', value: '点击评价'}]"
+                                             :filter-method="filterTag"
+                                             filter-placement="bottom-end">
+                                <template slot-scope="scope">
+                                    <el-tag
+                                            :type="scope.row.status_text === '等待同意' ? 'primary' : 'success'"
+                                            disable-transitions v-if="scope.row.status >= 20"
+                                            @click="order_click(scope.row.id,scope.row.store_user_id)">
+                                        点击评价
+                                    </el-tag>
+                                </template>
+                            </el-table-column>
+                        </el-table>
+                    </template>
+
+                    <!--我收到的合作请求-->
+                    <div v-if="newbulid_hid">
+                        <template>
+                            <el-tabs v-model="Rece_activeName" @tab-click="Rece_handleClick">
+                                <el-tab-pane label="新房" name="1">用户管理</el-tab-pane>
+                                <el-tab-pane label="二手房" name="2">配置管理</el-tab-pane>
+                                <el-tab-pane label="租房" name="3">角色管理</el-tab-pane>
+                            </el-tabs>
+                        </template>
+
+                        <template>
+                            <el-table
+                                    :data="get_request"
+                                    @cell-mouse-enter="handledbClick"
+                                    style="width: 100%;"
+                                    @row-dblclick="hous_share(house_share_id,house_type_id)">
+                                <el-table-column
+                                        prop="house_resold.title"
+                                        label="房源标题"
+                                >
+                                </el-table-column>
+                                <el-table-column
+                                        prop="user_profile_info.nickname"
+                                        label="经纪人"
+                                >
+                                </el-table-column>
+                                <el-table-column
+                                        prop="store.title"
+                                        label="所属门店"
+                                >
+                                </el-table-column>
+                                <el-table-column
+                                        prop="store_uers_mobile"
+                                        label="电话号码"
+                                >
+                                </el-table-column>
+                                <!--<el-table-column-->
+                                        <!--prop="user_profile_info.sex"-->
+                                        <!--label="经纪人性别"-->
+                                <!--&gt;-->
+                                <!--</el-table-column>-->
+                                <el-table-column
+                                        prop="status_text"
+                                        label="合作状态">
+                                </el-table-column>
+
+                                <el-table-column
+                                        prop="create_time"
+                                        label="请求时间"
+                                >
+                                </el-table-column>
+
+                                <el-table-column
+                                        prop="tag"
+                                        label="合作状态"
+                                        width="100"
+                                        :filters="[{ text: '同意合作', value: '同意合作' }, { text: '完成合作', value: '完成合作' }, { text: '已完成', value: '已完成' }, { text: '等待评价', value: '等待评价' }]"
+                                        :filter-method="filterTag"
+                                        filter-placement="bottom-end">
+                                    <template slot-scope="scope">
+                                        <el-tag
+                                                :type="status === 10 ? 'primary' : 'success'"
+                                                disable-transitions v-if="scope.row.status == 10"
+                                                @click="shar_btn_agree(event)"
+                                        >同意合作
+                                        </el-tag>
+                                        <el-tag
+                                                :type="status === 20 ? 'primary' : 'success'"
+                                                disable-transitions v-else-if="scope.row.status == 20"
+                                                @click="shar_btn">完成合作
+                                        </el-tag>
+
+                                        <!--                                <el-tag-->
+                                        <!--                                :type="status === 30 ? 'primary' : 'success'"-->
+                                        <!--                                disable-transitions v-else-if="scope.row.status == 30">等待评价-->
+                                        <!--                                </el-tag>-->
+
+                                        <el-tag
+                                                :type="status === 30 ? 'primary' : 'success'"
+                                                disable-transitions v-else-if="scope.row.status == 30">已完成
+                                        </el-tag>
+
+                                    </template>
+                                </el-table-column>
+                            </el-table>
+
+                        </template>
+
+                    </div>
+                </el-main>
+
+
+                <el-footer style="text-align: center">
+                    <!-- <el-pagination style="text-align: center" hide-on-single-page background layout="prev, pager, next"
+                        :total="50">
+                    </el-pagination> -->
+                    <el-button type="text" icon="el-icon-arrow-left" size="medium"
+                               @click="prevPage" :disabled="disabled_downBtn">上一页
+                    </el-button>
+                    <el-button type="text" size="medium" @click="nextPage" :disabled="nextBtn">下一页<i
+                            class="el-icon-arrow-right el-icon--right"></i></el-button>
+
+                </el-footer>
+            </el-container>
+        </el-container>
+
+
+        <!--点击已完成待评价显示评价弹窗-->
+        <el-dialog
+                title="请评价该经纪人"
+                :visible.sync="dialogVisible"
+                width="70%"
+                :before-close="handleClose">
+            <el-input
+                    type="textarea"
+                    :rows="5"
+                    placeholder="请输入评价内容"
+                    v-model="textarea"
+            >
+            </el-input>
+            <div class="block">
+                <!--<span class="demonstration">默认不区分颜色</span>-->
+                <el-rate v-model="value1"></el-rate>
+            </div>
+            <span slot="footer" class="dialog-footer">
+
+                <el-button @click="dialogVisible = false">取 消</el-button>
+                <el-button type="primary" @click="updata_order">确 定</el-button>
+          </span>
+        </el-dialog>
+    </div>
+</block>
+<block name="js">
+    <script type="text/javascript">
+        let user_data = JSON.parse('{:cache("user_data")}');
+        let order_house_share_id = 0;
+        let store_user_id = 0;
+        // console.log(user_data);
+        let clickTimer = null;
+        var myvue = new Vue({
+            el: '#app',
+            data: {
+                loading: false,
+                nextBtn: false,
+                disabled_downBtn: true,
+                search_um: '',
+                search_nick: '',
+                page: 1,
+                new_page: 1,
+                page_size: 32,
+                activeName: 'first',
+                newbulid_hid: false,
+                issue_request: true,
+                imgNon: false,
+                share_house: [],
+                get_request: [],
+                house_share_id: '',
+                house_type_id: '',
+                dialogVisible: false,
+                union_status: '',
+                textarea: '',
+                value1: null,
+                issue_activeName: '{:input("house_type_id")}' || "2",
+                Rece_activeName: '2',
+                header: {user_token: user_data.user_token.user_token, store_id: user_data.store_user_info.store_id},
+            },
+            created() {
+                this.newLists();
+            },
+            methods: {
+                //我发出的合作请求
+                newLists() {
+                    let data = Object.assign({
+                        url: 'extend/manager/order_house_share/lists',
+                        page: this.page,
+                        page_size: this.page_size,
+                        nickname: this.search_nick,
+                        title: this.search_um,
+                        house_type_id: this.issue_activeName,
+                    }, this.header);
+                    console.log(data.house_type_id);
+                    utils.ajax({
+                        data: data,
+                        success: (res) => {
+                            console.log(res);
+                            this.loading = false;
+                            if (res.data.code == -2) {
+                                this.$message.error(res.data.msg);
+                                return false;
+                            } else if (res.data.code == 0) {
+                                this.$message.error(res.data.msg);
+                                return false;
+                            } else if (res.data.code == 1) {
+                                //判断页面中的男女显示
+                                for (let i = 0; i < res.data.data.length; i++) {
+                                    if (res.data.data[i].user_profile.sex == 1) {
+                                        res.data.data[i].user_profile.sex = '男';
+                                    } else if (res.data.data[i].user_profile.sex == 2) {
+                                        res.data.data[i].user_profile.sex = '女';
+                                    } else{
+                                        res.data.data[i].user_profile.sex = '未知';
+                                    }
+                                }
+
+                                //这里做一个判断，当发出合作时判断是新房还是二手房还是租房，显示数据不同
+                                if (this.issue_activeName == 1) {
+                                    for (let i = 0; i < res.data.data.length; i++) {
+                                        res.data.data[i].house_resold = res.data.data[i].house_new;
+                                    }
+                                    this.share_house = res.data.data;
+
+                                } else if (this.issue_activeName == 2) {
+
+                                    this.share_house = res.data.data;
+
+                                } else if (this.issue_activeName == 3) {
+                                    for (let i = 0; i < res.data.data.length; i++) {
+                                        res.data.data[i].house_resold = res.data.data[i].house_renting;
+                                    }
+                                    this.share_house = res.data.data;
+
+                                }
+
+                                //正常数据
+                                // this.share_house = res.data.data;
+                                console.log(this.share_house);
+                                //判断页面数据是否有32个 下一页翻页
+                                if (this.page == 1) {
+                                    if (this.share_house.length < 32) {
+                                        this.disabled_downBtn = true;
+                                        this.nextBtn = true;
+                                    } else {
+                                        this.disabled_downBtn = true;
+                                        this.nextBtn = false;
+                                    }
+                                } else {
+                                    if (this.share_house.length < 32) {
+                                        this.disabled_downBtn = false;
+                                        this.nextBtn = true;
+                                    } else {
+                                        this.disabled_downBtn = false;
+                                        this.nextBtn = false;
+                                    }
+                                }
+
+
+                            }
+                            // console.log(data);
+                        },
+                        error: function (res) {
+                            console.log('error' + res)
+                        }
+                    })
+                },
+                //我收到的合作请求
+                request_list() {
+                    let data = Object.assign({
+                        url: 'extend/manager/order_house_share/myLists',
+                        page: this.page,
+                        page_size: this.page_size,
+                        nickname: this.search_nick,
+                        title: this.search_um,
+                        house_type_id: this.Rece_activeName,
+                    }, this.header);
+                    utils.ajax({
+                        data: data,
+                        success: (res) => {
+                            console.log(res);
+                            this.loading = false;
+                            if (res.data.code == -2) {
+                                this.$message.error(res.data.msg);
+                                return false;
+                            } else if (res.data.code == 0) {
+                                this.$message.error(res.data.msg);
+                                return false;
+                            } else if (res.data.code == 1) {
+                                //判断页面中的男女显示
+                                for (let i = 0; i < res.data.data.length; i++) {
+                                    if (res.data.data[i].user_profile_info.sex == 1) {
+                                        res.data.data[i].user_profile_info.sex = '男';
+                                    } else if (res.data.data[i].user_profile_info.sex == 2) {
+                                        res.data.data[i].user_profile_info.sex = '女';
+                                    } else{
+                                        res.data.data[i].user_profile_info.sex = '未知';
+                                    }
+                                }
+                                //这里做一个判断，当收到合作时判断是新房还是二手房还是租房，显示数据不同
+                                if (this.Rece_activeName == 1) {
+                                    for (let i = 0; i < res.data.data.length; i++) {
+                                        res.data.data[i].house_resold = res.data.data[i].house_new;
+                                    }
+                                    this.get_request = res.data.data;
+
+                                } else if (this.Rece_activeName == 2) {
+
+                                    this.get_request = res.data.data;
+
+                                } else if (this.Rece_activeName == 3) {
+                                    for (let i = 0; i < res.data.data.length; i++) {
+                                        res.data.data[i].house_resold = res.data.data[i].house_renting;
+                                    }
+                                    this.get_request = res.data.data;
+
+                                }
+
+                                console.log(this.get_request);
+                                //判断页面数据是否有32个 下一页翻页
+                                if (this.page == 1) {
+                                    if (this.share_house.length < 32) {
+                                        this.disabled_downBtn = true;
+                                        this.nextBtn = true;
+                                    } else {
+                                        this.disabled_downBtn = true;
+                                        this.nextBtn = false;
+                                    }
+                                } else {
+                                    if (this.get_request.length < 32) {
+                                        this.disabled_downBtn = false;
+                                        this.nextBtn = true;
+                                    } else {
+                                        this.disabled_downBtn = false;
+                                        this.nextBtn = false;
+                                    }
+                                }
+                            }
+                            // console.log(data);
+                        },
+                        error: function (res) {
+                            console.log('error' + res)
+                        }
+                    })
+                },
+                prevPage() {
+                    if (this.activeName == 'first') {
+                        if (this.page > 1) {
+                            this.page--;
+                        }
+                        this.newLists();
+                    } else {
+                        if (this.new_page > 1) {
+                            this.new_page--;
+                        }
+                        this.request_list();
+                    }
+
+                    if (this.page == 1 || this.new_page == 1) {
+                        this.disabled_downBtn = true;
+                        this.nextBtn = false;
+                    }
+                },
+                nextPage() {
+                    if (this.activeName == 'first') {
+                        this.page++;
+                        this.newLists();
+                        this.disabled_downBtn = true;
+                    } else {
+                        this.new_page++;
+                        this.request_list();
+                        this.disabled_downBtn = true;
+                    }
+
+                    if (this.page != 1 || this.new_page != 1) {
+                        this.disabled_downBtn = false;
+                    }
+                    // this.getHouses(this.formHeader.house_type ? this.formHeader.house_type : 1);
+                },
+                //输入框中的筛选功能
+                search() {
+                    if (this.activeName === 'first') {
+                        this.get_request = [];
+                        this.share_house = [];
+                        this.newbulid_hid = false;
+                        this.issue_request = true;
+                        this.newLists();
+                    } else if (this.activeName === 'second') {
+                        this.get_request = [];
+                        this.share_house = [];
+                        this.newbulid_hid = true;
+                        this.issue_request = false;
+                        this.request_list();
+                    }
+                },
+                //输入框筛选昵称的功能
+                search_name() {
+                    if (this.activeName === 'first') {
+                        this.get_request = [];
+                        this.share_house = [];
+                        this.newbulid_hid = false;
+                        this.issue_request = true;
+                        this.newLists();
+                    } else if (this.activeName === 'second') {
+                        this.get_request = [];
+                        this.share_house = [];
+                        this.newbulid_hid = true;
+                        this.issue_request = false;
+                        this.request_list();
+                    }
+                },
+                //我的合作页面 头部的tab切换功能
+                handleClick(tab, event) {
+                    if (tab.name === 'first') {
+                        this.get_request = [];
+                        this.share_house = [];
+                        this.newbulid_hid = false;
+                        this.issue_request = true;
+                        this.newLists();
+                    } else if (tab.name === 'second') {
+                        this.get_request = [];
+                        this.share_house = [];
+                        this.newbulid_hid = true;
+                        this.issue_request = false;
+
+                        this.request_list();
+                    }
+                    // console.log(tab, event);
+                },
+                //我发出的合作请求 || 我收到的合作请求，点击行跳转
+                hous_share(id, house_type_id) {
+                    window.location.href = 'union_info.html?real_num=' + id + '&aa=' + house_type_id;
+                },
+                filterTag(value, row) {
+                    return row.status_text === value;
+                },
+                //点击经纪人列表中的同意合作功能
+                shar_btn_agree(event) {
+                    //返回数据接口
+                    let data = Object.assign({
+                        url: 'extend/manager/order_house_share/agree',
+                        // page: this.page,
+                        user_token: user_data.user_token.user_token,
+                        id: this.union_status
+                    }, this.header);
+                    utils.ajax({
+                        data: data,
+                        success: (res) => {
+                            // console.log(res.data);
+                            if (res.data.code == -2) {
+                                this.$message.error(res.data.msg);
+                                return false;
+                            } else if (res.data.code == 1) {
+                                // alert(res.data.data.address);
+                                this.$message.success(res.data.msg);
+                                this.dialogFormVisible = false;
+                                this.request_list();
+                            } else if (res.data.code == 0) {
+                                this.$message.error(res.data.msg);
+                                return false;
+                            }
+                            // console.log(data);
+                        },
+                        error: function (res) {
+                            console.log('error' + res)
+                        }
+                    })
+
+                },
+                //点击请求合作显示
+                shar_btn() {
+                    //返回数据接口
+                    let data = Object.assign({
+                        url: 'extend/manager/order_house_share/finish',
+                        // page: this.page,
+                        user_token: user_data.user_token.user_token,
+                        id: this.union_status
+                    }, this.header);
+
+                    utils.ajax({
+                        data: data,
+                        success: (res) => {
+
+                            console.log(res);
+                            if (res.data.code == -2) {
+
+                                this.$message.error(res.data.msg);
+                                return false;
+                            } else if (res.data.code == 1) {
+                                // alert(res.data.data.address);
+                                this.$message.success(res.data.msg);
+                                this.request_list();
+                            } else if (res.data.code == 0) {
+                                this.$message.error(res.data.msg);
+                                return false;
+                            }
+                            // console.log(data);
+                        },
+                        error: function (res) {
+                            console.log('error' + res)
+                        }
+                    })
+                },
+                //鼠标移入表格获取数据
+                handledbClick(row) {
+                    this.union_status = row.id;
+                    this.house_share_id = row.house_share_id;
+                    if (this.activeName == 'first') {
+                        this.house_type_id = this.issue_activeName;
+                    } else {
+                        this.house_type_id = this.Rece_activeName;
+                    }
+
+                    // console.log(row.id);
+                    // for(let i = 0 ; i < this.share_house.length;i++){
+                    //     this.house_share_id = this.share_house[i].house_share_id;
+                    //     // console.log(this.house_share_id);
+                    // }
+
+                },
+                order_click(e, d) {
+                    order_house_share_id = e;
+                    store_user_id = d;
+                    this.dialogVisible = true;
+                },
+                //我发出的合作中的弹窗， 点击评价 关闭该弹窗时的事件
+                handleClose(done) {
+                    this.$confirm('确认关闭？')
+                        .then(_ => {
+                            done();
+                        })
+                        .catch(_ => {
+                        });
+                },
+                //点击提交评价
+                updata_order() {
+                    let data = Object.assign({
+                        url: 'extend/manager/order_house_share/evaluate',
+                        page: this.page,
+                        score: this.value1,
+                        msg: this.textarea,
+                        id: order_house_share_id,
+                        store_user_id: store_user_id
+                    }, this.header);
+                    // alert(order_house_share_id);
+                    utils.ajax({
+                        data: data,
+                        success: (res) => {
+                            // console.log(res.data);
+                            if (res.data.code == -2) {
+                                this.$message.error(res.data.msg);
+                                return false;
+                            } else if (res.data.code == 1) {
+                                // alert(res.data.data.address);
+                                this.$message.success(res.data.msg);
+                                this.dialogVisible = false;
+                                this.newLists();
+                            } else if (res.data.code == 0) {
+                                this.$message.error(res.data.msg);
+                                return false;
+                            }
+                            // console.log(data);
+                        },
+                        error: function (res) {
+                            console.log('error' + res)
+                        }
+                    })
+                },
+                //详情页中的tabs切换。发出的
+                iss_handleClick(tab, event) {
+                    if (tab.name === 1) {
+                        this.share_house == [];
+                        this.newLists();
+                    } else if (tab.name === 2) {
+                        this.share_house == [];
+                        this.newLists();
+                    } else {
+                        this.share_house == [];
+                        this.newLists();
+                    }
+                },
+                //收到
+                Rece_handleClick(tab, event) {
+                    if (tab.name === 1) {
+                        this.get_request == [];
+                        this.request_list();
+                    } else if (tab.name === 2) {
+                        this.get_request == [];
+                        this.request_list();
+                    } else {
+                        this.get_request == [];
+                        this.request_list();
+                    }
+                }
+            },
+
+        });
+        //关闭右键菜单
+        window.onclick = function (e) {
+            myvue.$data.show = false;
+        }
+    </script>
+</block>
+

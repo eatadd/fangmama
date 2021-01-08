@@ -1,0 +1,898 @@
+<extend name="base/common"/>
+<!--2020/1/8 狸猫 新楼盘详情 改-->
+<block name="body">
+    <style>
+        .el-header {
+            color: #333;
+            line-height: 60px;
+            text-align: right;
+            font-size: 12px
+        }
+
+        .el-aside {
+            color: #333;
+        }
+
+        #menu {
+            position: absolute;
+        }
+
+        .el-menu {
+            box-shadow: 0 0 5px #ddd;
+            z-index: 99;
+            border: 1px solid #ddd;
+        }
+
+        .el-menu-item {
+            color: #555;
+            border-bottom: 1px solid #f3f3f3;
+        }
+
+        .el-menu-item:focus, .el-menu-item:hover {
+            background-color: #e6e9ed;
+            color: #ff5100
+        }
+
+        a {
+            text-decoration: none
+        }
+
+        .el-menu li {
+            height: 35px;
+            line-height: 35px;
+        }
+
+        .buliding_home_name {
+            color: #999;
+            margin-right: 10px;
+        }
+
+        .build_border_size {
+            font-size: 0.9rem;
+            color: #999;
+        }
+
+        .bulid_newtim_col {
+            padding: 5px 0px;
+        }
+
+        .bulid_info_tow_tit > h3 {
+            display: inline-block;
+        }
+
+        .bulid_info_tow_tit {
+            display: flex;
+            align-items: center;
+        }
+
+        .bulid_info_tow_tit > span {
+            background-color: #FF5501;
+            width: 4px;
+            display: inline-block;
+            height: 20px;
+            margin-right: 10px;
+        }
+
+        .build_info_two {
+            padding-top: 10px;
+        }
+
+        .build_ifo_two_news {
+            padding: 0 13px;
+        }
+
+        .build_ifo_two_news_dv {
+            font-size: 0.9rem;
+            line-height: 2;
+        }
+
+        .build_ifo_two_news_dv > span:first-child {
+            color: #999;
+            padding-right: 15px;
+        }
+
+        .build_house_ypp_img {
+            width: 100%;
+            /*height: 260px;*/
+        }
+
+        .build_three_neararea {
+            padding: 10px 0;
+        }
+
+        .build_three_area {
+            padding: 5px 0;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .build_three_area > span:first-child {
+            color: #999;
+            padding-right: 15px;
+        }
+
+        #allmap {
+            width: 100%;
+            height: 500px;
+            overflow: hidden;
+            margin: 0;
+            font-family: "微软雅黑";
+        }
+
+        .building_diolg_up {
+            padding-left: 50px;
+        }
+
+        .building_diolg_soan {
+            min-height: 2.5rem;
+            line-height: 2.5rem;
+            display: block;
+        }
+        .index_prop_tu{
+            background-color: rgba(111,121,111,.05);
+            text-align: center;
+        }
+        /**弹窗显示滚动与溢出*/
+        .prop_auto{
+            height: 350px;
+            overflow: hidden;
+            /*overflow-y: auto;*/
+        }
+        .newbild_btn{
+            width: 100px;
+            height: 40px;
+            line-height: 40px;
+            background-color: #FF5501;
+            /*padding: 10px;*/
+            text-align: center;
+            color: #fff;
+            display: inline-block;
+            cursor: pointer;
+            margin: 0 auto;
+        }
+        .el-dialog__header{
+            border-bottom: 1px solid #f1f1f1;
+        }
+        .el-dialog__footer{
+            border-top: 1px solid #f1f1f1;
+        }
+    </style>
+    <div id="app" v-hide>
+        <el-container>
+            <el-container v-loading="loading">
+                <el-header>
+                    <el-row>
+                        <el-col :span="5">
+                            <div class="grid-content bg-purple-dark">
+                                <div style="float: left;">
+                                    <!--返回按钮-->
+                                    <el-button type="danger" icon="el-icon-arrow-left" size="small" @click="open()">
+                                    </el-button>
+
+                                    <!--<el-button type="primary" @click="openRep" icon="el-icon-plus" size="small">-->
+                                    <!--</el-button>-->
+                                </div>
+                            </div>
+                        </el-col>
+                        <el-col :span="19" style="float: right">
+                            <el-row>
+                                <el-col :span="24">
+                                    <div style="float: right;">
+
+                                    </div>
+                                </el-col>
+
+                            </el-row>
+                        </el-col>
+                    </el-row>
+                </el-header>
+                <el-main
+                        @row-contextmenu.prevent="openDetails"
+                        @row-dblclick="row_clicks"
+                        :data="tableData"
+                        style="margin-top: -15px;">
+
+                    <!--轮播图-->
+                    <template>
+                        <el-carousel class="index_prop_tu" trigger="click" height="360px" interval="10000000">
+                            <el-carousel-item v-for="item in tableData.logo.split(',')" :key="item">
+                                <img :src="item.substr(0,4).toLowerCase() == 'http' ? item : utils.img_domain + item"  height="100%" width="auto" @click="lumbigImg" />
+                            </el-carousel-item>
+                        </el-carousel>
+                    </template>
+
+                    <!--第一部分信息-->
+                    <div class="" style="margin-top: 20px;">
+                        <el-row style="padding: 5px 0">
+                            <el-col :span="12">
+                                <div class="grid-content bg-purple ">
+                                    <span class="buliding_home_name">楼盘名称 :</span> {{tableData.title}}
+                                </div>
+                            </el-col>
+                            <el-col :span="12">
+                                <div class="grid-content bg-purple-light" style="color:red;">
+                                    <!--<span style="font-size: 1.1rem;">{{tableData.unit_price}}元</span> / <span>平方米</span>-->
+                                    <span class="buliding_home_name">开发商 :</span> {{tableData.developersd}}
+                                    <!--<div style="height: 25px;line-height: 25px;">-->
+                                        <span class="buliding_home_name" style="margin-left: 30px;">佣金 :</span>{{tableData.commission}}/套
+                                    <!--</div>-->
+
+                                </div>
+                            </el-col>
+                        </el-row>
+
+                        <el-row :gutter="20" style="padding: 15px 0;font-size: 0.9rem;">
+                            <el-col :span="16">
+                                <div class="grid-content bg-purple">
+                                    <i class="el-icon-location-outline"></i> {{tableData.address}}
+                                </div>
+                            </el-col>
+                            <el-col :span="8">
+                                <div class="newbild_btn" @click="openRep">
+                                    添加报备
+                                </div>
+                                <div class="newbild_btn" @click="openalert">
+                                    咨询电话
+                                </div>
+                            </el-col>
+                        </el-row>
+
+                        <el-row class="build_border_size bulid_newtim_right">
+                            <el-col :span="12" class="bulid_newtim_col">
+                                <div class="grid-content bg-purple">
+                                    最新开盘时间: {{tableData.open_time}}
+                                </div>
+                            </el-col>
+                            <el-col :span="12" class="bulid_newtim_col">
+                                <div class="grid-content bg-purple">
+                                    浏览次数: {{tableData.looksum}}次
+                                </div>
+                            </el-col>
+                        </el-row>
+                    </div>
+
+                    <!--第二部分-->
+                    <div class="build_info_two">
+                        <div class="bulid_info_tow_tit">
+                            <span></span>
+                            <h3>楼盘简介</h3>
+                        </div>
+                        <div class="build_ifo_two_news">
+                            <el-row>
+                                <el-col :span="12">
+                                    <div class="grid-content bg-purple build_ifo_two_news_dv">
+                                        <span>添加时间</span> <span>{{tableData.create_time}}</span>
+                                    </div>
+                                </el-col>
+                                <el-col :span="12">
+                                    <div class="grid-content bg-purple-light build_ifo_two_news_dv">
+                                        <span>交房时间</span> <span>{{tableData.housekeeping_time}}</span>
+                                    </div>
+                                </el-col>
+                            </el-row>
+                            <el-row>
+                                <el-col :span="12">
+                                    <div class="grid-content bg-purple build_ifo_two_news_dv">
+                                        <span>产权期限</span> <span>{{tableData.property_right}}</span>
+                                    </div>
+                                </el-col>
+                                <el-col :span="12">
+                                    <div class="grid-content bg-purple-light build_ifo_two_news_dv">
+                                        <span>楼盘位置</span> <span>{{tableData.city_id}}</span>
+                                    </div>
+                                </el-col>
+                            </el-row>
+                            <el-row>
+                                <el-col :span="12">
+                                    <div class="grid-content bg-purple build_ifo_two_news_dv">
+                                         <span>许可证</span> <span> {{tableData.licence}}</span>
+                                    </div>
+                                </el-col>
+                                <el-col :span="12">
+                                    <div class="grid-content bg-purple-light build_ifo_two_news_dv">
+                                        <span>联系电话</span> <span> {{tableData.store_user_mobile}}</span>
+                                    </div>
+                                </el-col>
+                                <el-col :span="12">
+                                    <div class="grid-content bg-purple-light build_ifo_two_news_dv">
+                                        <span>楼盘佣金</span> <span> {{tableData.commission}} 元</span>
+                                    </div>
+                                </el-col>
+                                <el-col :span="12">
+                                    <div class="grid-content bg-purple-light build_ifo_two_news_dv">
+                                        <span>补贴政策</span> <span> {{tableData.subsidy}}</span>
+                                    </div>
+                                </el-col>
+                                <el-col :span="12">
+                                    <div class="grid-content bg-purple-light build_ifo_two_news_dv">
+                                        <span>楼盘简介</span> <span> {{tableData.info}}</span>
+                                    </div>
+                                </el-col>
+                            </el-row>
+                        </div>
+                    </div>
+
+                    <!--第三段户型图内容-->
+                    <div class="build_info_three">
+                        <div class="bulid_info_tow_tit">
+                            <span></span>
+                            <h3>户型图</h3>
+                        </div>
+                        <div class="build_house_ypp_img" style="padding: 10px 0;">
+                            <el-carousel trigger="click" class="index_prop_tu" height="360px">
+                                <el-carousel-item v-for="item in tableData.huxing_img.split(',')" :key="item">
+                                    <img :src="item.substr(0,4).toLowerCase() == 'http' ? item : utils.img_domain + item"  height="100%" width="auto" @click="lumbigImg" />
+                                </el-carousel-item>
+                            </el-carousel>
+
+                        </div>
+                        <div class="build_three_neararea">
+                            <div class="build_three_school build_three_area">
+                                <span>附近学校</span>
+                                <span>{{tableData.school}}</span>
+                            </div>
+                            <div class="build_three_subway build_three_area">
+                                <span>附近地铁</span>
+                                <span>{{tableData.metro}}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!--第五段报备日志内容-->
+<!--                    <div class="build_info_four" style="padding-bottom: 40px;">-->
+<!--                        <div class="bulid_info_tow_tit">-->
+<!--                            <span></span>-->
+<!--                            <h3>报备日志</h3>-->
+<!--                        </div>-->
+<!--                        &lt;!&ndash;时间戳&ndash;&gt;-->
+<!--                        <div class="block">-->
+<!--                            <el-timeline v-for="item in reportList">-->
+<!--                                <el-timeline-item :timestamp="item.create_time" placement="top">-->
+<!--                                    <el-card>-->
+<!--                                        <h4>新添加了一个客户</h4>-->
+<!--                                        <p>-->
+<!--                                            {{item.log_content}}-->
+<!--                                        </p>-->
+
+<!--                                    </el-card>-->
+<!--                                </el-timeline-item>-->
+<!--                            </el-timeline>-->
+<!--                        </div>-->
+<!--                    </div>-->
+
+                    <!--第四段户型图内容  地图暂时不显示-->
+                    <!--<div class="build_info_four" style="padding-bottom: 40px;">-->
+                        <!--<div class="bulid_info_tow_tit">-->
+                            <!--<span></span>-->
+                            <!--<h3>附近周边</h3>-->
+                        <!--</div>-->
+                        <!--&lt;!&ndash;地图展示&ndash;&gt;-->
+                        <!--<div id="allmap"></div>-->
+                    <!--</div>-->
+
+                </el-main>
+
+
+            </el-container>
+        </el-container>
+
+        <!--d点击编辑按钮显示的弹窗编辑-->
+        <el-dialog title="添加报备" :visible.sync="dialogFormVisible" width="70%;">
+            <el-form :model="form" class="prop_auto" style="height: 250px;">
+                <el-form-item label="客户姓名" :label-width="formLabelWidth">
+                    <el-input  v-model="name" autocomplete="off"></el-input>
+                </el-form-item>
+                <el-form-item label="联系号码" :label-width="formLabelWidth">
+                    <el-input v-model="mobile" autocomplete="off"></el-input>
+                </el-form-item>
+                <el-form-item label="客户性别" :label-width="formLabelWidth">
+                    <el-radio-group v-model="form.resource" style="margin-left: 5px;">
+                        <el-radio label="1">男</el-radio>
+                        <el-radio label="2">女</el-radio>
+                    </el-radio-group>
+                </el-form-item>
+                <el-form-item label="需求描述" :label-width="formLabelWidth">
+                    <el-input type="textarea" v-model="description" autocomplete="off"></el-input>
+                </el-form-item>
+                <!--<el-form-item label="其他描述" :label-width="formLabelWidth">-->
+                    <!--<el-input type="textarea" v-model=""></el-input>-->
+                <!--</el-form-item>-->
+
+
+            </el-form>
+            <div slot="footer" class="dialog-footer">
+                <el-button @click="dialogFormVisible = false">取 消</el-button>
+                <el-button @click="addReport" type="primary">确 定</el-button>
+            </div>
+        </el-dialog>
+
+
+
+    </div>
+</block>
+<block name="js">
+    <!--2019/10/11 狸猫新增地图js引入-->
+    <script type="text/javascript" src="//api.map.baidu.com/api?v=2.0&ak=cOrtbdRp4rHUoUKiSDR81w8XjDLLwEdb"></script>
+    <script type="text/javascript">
+        let user_data = JSON.parse('{:cache("user_data")}');
+        let clickTimer = null;
+        let page_go = "{:input('real_num')}";
+        page_go = page_go.split(',');
+        let url = page_go[0];
+        let page = page_go[1];
+        // console.log(url+ page);
+        var myvue = new Vue({
+            el: '#app',
+            data: {
+                fileListss: [],
+                fileLists: [],
+                tableData: {
+                    huxing_img:'',
+                    logo:''
+                },
+                reportList:[],
+                lists: [],
+                value: '',
+                search: '',
+                input2: '',
+                show: false,
+                drawer: false,
+                direction: 'btt',
+                formVisible: false,
+                activeName: 'one',
+                activeIndex: '1',
+                activeIndex2: '1',
+                customer: {id: ""},
+                customer_id: 0,
+                forms: [],
+                formDom: {},
+                form: {
+                    name: '',
+                    region: '',
+                    date1: '',
+                    date2: '',
+                    delivery: false,
+                    type: [],
+                    resource: '1',
+                    desc: ''
+                },
+                loading: false,
+                customerFollows: [],
+                followOption: {},
+                tabs: [],//点击后显示的弹窗中的显示内容
+                tabIndex: 0,
+                formIndex: 0,
+                datas: [],
+                datasPage: 1,
+                datasNextBtn: true,
+                header: {user_token: user_data.user_token.user_token, store_id: user_data.store_user_info.store_id},
+                page: 1,
+                nextBtn: true,
+                formLabelWidth: '120px',
+                dialogImageUrl: '',
+                dialogVisible: false,
+                dialogFormVisible:false,
+                name:'',
+                mobile:'',
+                description:'',
+                updata_report:[],
+            },
+            created() {
+                this.getCustomers();
+                this.getreport();
+            },
+            methods: {
+                getCustomers() {
+                    this.loading = true;
+                    let data = Object.assign({
+                        url: 'extend/manager/report_building/getBuildingInfo',
+                        page: this.page,
+                        report_building_id : url
+                    }, this.header);
+                    // console.log(data.id);
+                    //console.log(data); 这个console是获取活的usertoken
+                    utils.ajax({
+                        data: data,
+                        success: (res) => {
+                            this.loading = false;
+                            // alert(JSON.stringify(res.data))
+                            // console.log(res.data);
+                            if (res.data.code == -2) {
+                                this.$message.error(res.data.msg);
+                                return false;
+                            }else if(res.data.code == 0){
+                                this.$message.error(res.data.msg);
+                                return false;
+                            } else if (res.data.code == 1) {
+                                // console.log(JSON.stringify(res.data.data));
+                                console.log(res.data.data);
+                                this.tableData = res.data.data;
+                                var date = new Date(this.tableData.create_time * 1000);//时间戳为10位需*1000，时间戳为13位的话不需乘1000
+                                var Y = date.getFullYear() + '-';
+                                var M = (date.getMonth() + 1 < 10 ? '0' + (date.getMonth() + 1) : date.getMonth() + 1) + '-';
+                                var D = date.getDate() + ' ';
+                                var h = date.getHours() + ':';
+                                var m = date.getMinutes() + ':';
+                                var s = date.getSeconds();
+                                this.tableData.create_time = Y + M + D + h + m + s;
+                            }
+                            // console.log(data);
+                        },
+                        error: function (res) {
+                            console.log('error' + res)
+                        }
+                    })
+                    this.formDom = this.forms[this.formIndex];
+                },
+                //报备日志获取数据
+                getreport() {
+                    this.loading = true;
+                    let data = Object.assign({
+                        url: 'extend/manager/report_building/getBuildingLogo',
+                        page: this.page,
+                        report_building_id : url
+                    }, this.header);
+                    // console.log(data.id)
+                    //console.log(data); 这个console是获取活的usertoken
+                    utils.ajax({
+                        data: data,
+                        success: (res) => {
+                            this.loading = false;
+                            // alert(JSON.stringify(res.data))
+                            // console.log(res.data);
+                            if (res.data.code == -2) {
+                                this.$message.error(res.data.msg);
+                                return false;
+                            }else if(res.data.code == 0){
+                                this.$message.error(res.data.msg);
+                                return false;
+                            } else if (res.data.code == 1) {
+                                // alert(res.data.data.address);
+
+                                this.reportList = res.data.data;
+                                // console.log('ab12',this.reportList);
+                            }
+                            // console.log(data);
+                        },
+                        error: function (res) {
+                            console.log('error' + res)
+                        }
+                    })
+                    this.formDom = this.forms[this.formIndex];
+                },
+                prevPage() {
+                    this.page--;
+                    this.getCustomers();
+                },
+                nextPage() {
+                    this.page++;
+                    this.getCustomers();
+                },
+                datasPrevPage() {
+                    this.datasPage--;
+                    this.getTabDataList();
+                },
+                datasNextPage() {
+                    this.datasPage++;
+                    this.getTabDataList();
+                },
+                handleSelect(key, keyPath) {
+                    console.log(key, keyPath);
+                },
+                //点击编辑图标显示弹窗修改内容
+                open() {
+                    window.location.href = '{:url("index")}?return_=' + page + ',' + 4;
+                },
+                buildsure() {
+                    let data = Object.assign({
+                        url: 'extend/manager/House/editBuildHouseInfo',
+                        page: this.page,
+                    }, this.header);
+                    //console.log(data); 这个console是获取活的usertoken
+                    let datas = Object.assign(data, this.tableData);
+                    //console.log(datas);//提交数据把原本获取到的tabelData数据赋值
+                    var house_type_images = '';
+                    var show_images = '';
+
+                    for (var i = 0; i < datas.house_type_images.length; i++) {
+                        house_type_images += datas.house_type_images[i] + ",";
+                    }
+                    for (var y = 0; y < datas.show_images.length; y++) {
+                        show_images += datas.show_images[y] + ",";
+                    }
+                    datas.house_type_images = house_type_images.substring(0, house_type_images.lastIndexOf(','));
+                    datas.show_images = show_images.substring(0, show_images.lastIndexOf(','));
+                    datas.status = '';
+                    datas.is_private = '';
+                    utils.ajax({
+                        data: datas,
+                        success: (res) => {
+                            // console.log(res.data);
+                            if (res.data.code == -2) {
+                                this.$message.error(res.data.msg);
+                                return false;
+                            } else if (res.data.code == 1) {
+                                // alert(res.data.data.address);
+                                this.$message.success(res.data.msg);
+                                this.dialogFormVisible = false;
+                            } else if (res.data.code == 0) {
+                                this.$message.error(res.data.msg);
+                                return false;
+                            }
+                            // console.log(data);
+                        },
+                        error: function (res) {
+                            console.log('error' + res)
+                        }
+                    })
+                },
+                openDetails(row, column, event) {
+                    event.preventDefault();
+                    row.id = row.id || 0;
+                    if (row.id == 0) {
+                        this.$message.error('数据异常');
+                        return;
+                    }
+                    // this.show = this.show ? false : true;
+                    this.show = true;
+                    var menu = document.querySelector("#menu");
+                    menu.style.left = event.clientX + 'px';
+                    menu.style.top = event.clientY + 'px';
+                },
+                //单击
+                // row_click(){
+                //     if (clickTimer) {
+                //         window.clearTimeout(clickTimer);
+                //         clickTimer = null;
+                //     }
+                //     clickTimer = window.setTimeout(function() {
+                //         // your click process code here
+                //         myvue.$data.drawer = true;
+                //     }, 200);
+                // },
+                //双击
+                row_clicks(row, event) {
+                    if (clickTimer) {
+                        window.clearTimeout(clickTimer);
+                        clickTimer = null;
+                    }
+                    // 确定选中的客源
+                    let customer = Object.assign({}, row);
+                    this.customer = customer;
+                    // your click process code here
+                    this.dialogFormVisible = true;
+
+                    this.getTabDataList();
+                },
+                showDialog() {
+                    this.dialogFormVisible = true;
+                },
+                handleClick(tab, event) {
+                    // 绑定tab的index值（下标）
+                    this.tabIndex = tab.index;
+                    this.datasPage = 1;
+                    this.getTabDataList();
+
+                },
+                // 显示表单
+                handleForm(index, row) {
+                    this.formDom = this.forms[index];
+
+                    this.formVisible = true;
+                    if (index == 1 || index == 2) {
+                        this.form = {
+                            "house_id": row.id,
+                            "customer_id": this.customer.id,
+                            "house_type_id": 1
+                        }
+                        // 获取跟进状态列表
+                        if (this.formIndex != index) {
+                            this.getFollowOption();
+                            this.formIndex = index;
+                        }
+                    }
+                },
+                onSubmit() {
+                    this.formDom.loading = true;
+
+                    let data = Object.assign({
+                        url: 'extend/manager/' + this.formDom.action
+                    }, this.form, this.header);
+                    // console.log(data);
+                    utils.ajax({
+                        data: data,
+                        success: (res) => {
+                            // console.log(res.data);
+
+                            // this.$message({
+                            //     type: 'info',
+                            //     message: res.data.msg
+                            // });
+                            this.formDom.loading = false;
+                            if (res.data.code) {
+                                this.$message({
+                                    message: res.data.msg,
+                                    type: 'success'
+                                });
+                                this[this.formDom.list].unshift(this.form);
+
+                                this.form = {};  // 如果添加成功，表单就清空
+                                this.formVisible = false; // 隐藏表单
+
+                            } else {
+                                this.$message.error(res.data.msg);
+                            }
+                        },
+                        error: function (res) {
+                            console.log('error' + res)
+                        }
+                    })
+                },
+                // test(){
+                //     var aoa = [
+                //         ['姓名', '性别', '年龄', '注册时间'],
+                //         ['张三', '男', 18, new Date()],
+                //         ['李四', '女', 22, new Date()]
+                //     ];
+                //     var sheet = XLSX.utils.aoa_to_sheet(aoa);
+                //     openDownloadDialog(sheet2blob(sheet), '导出.xlsx');
+                // }
+                getTabDataList() {
+                    if (!Number(this.tabIndex)) return false;
+                    this.lists = [];
+                    this.loading = true;
+                    let query = {};
+                    //  如果当前选中的是 客源跟进 或者是 签约记录
+                    if (this.tabIndex == 1 || this.tabIndex == 3) {
+                        query = {customer_id: this.customer.id};
+                    }
+                    //  房源列表暂时不需要 第二个源对象   所以为 空 query = {}
+
+                    let data = Object.assign({'page': this.datasPage},
+                        this.tabs[this.tabIndex - 1].query, query, this.header);
+                    // console.log(data);
+                    utils.ajax({
+                        data: data,
+                        success: (res) => {
+                            // console.log(res.data);
+                            this.loading = false;  // 关闭加载动画
+                            let count = 0
+                            if (res.data.code == 1) {
+                                let data = res.data.data;
+                                this.lists = data;
+                                count = data.length;
+                            }
+                            this.datasNextBtn = count >= 10 ? false : true;
+
+
+                        },
+                        error: function (res) {
+                            console.log('error' + res)
+                        }
+                    })
+                },
+                getFollowOption() {
+                    let follows = Object.keys(this.followOption);
+                    // console.log('follows.length: ' + follows.length);
+                    if (follows.length == 0) {
+                        this.formDom.loading = true;
+
+                        let data = Object.assign({url: 'extend/manager/HouseFollow/getFollowOption'}, this.header);
+                        utils.ajax({
+                            data: data,
+                            success: (res) => {
+                                this.formDom.loading = false;  // 关闭加载动画
+                                if (res.data.code == 1) {
+                                    let value = [];
+                                    for (let i of res.data.data) {
+                                        value.push({'title': i.key, 'value': i.id});
+                                    }
+                                    let data = {
+                                        'title': '跟进状态', 'field': 'step',
+                                        'value': value,
+                                        'type': 'region'
+                                    };
+                                    this.formDom.field.push(data);
+                                    // 将跟进状态的结构对象，赋值给followOption 对象，以便下次使用时不需要再次获取
+                                    this.followOption = data;
+                                }
+                            },
+                            error: function (res) {
+                                console.log('error' + res);
+                            }
+                        })
+                    } else {
+                        this.formDom.field.push(this.followOption);
+                    }
+                },
+                //上传
+                handleRemove(file, fileList) {
+                    console.log(file, fileList);
+                },
+                handlePictureCardPreview(file) {
+                    this.dialogImageUrl = file.url;
+                    this.dialogVisible = true;
+                },
+                lumbigImg(){},
+                //点击新增报备日志
+                openRep(){
+                    this.dialogFormVisible = true;
+                },
+                //点击弹出咨询电话
+                openalert(){
+                    this.$alert('咨询电话 : '+ this.tableData.store_user_mobile, '咨询电话', {
+                        confirmButtonText: '确定',
+                        callback: action => {
+                            // this.$message({
+                            //     type: 'info',
+                            //     message: `action: ${ action }`
+                            // });
+                        }
+                    });
+                },
+                //点击上传报备成员功能
+                addReport(){
+                    this.updata_report.push(this.name,this.mobile);
+                    let data = Object.assign({
+                        url: 'extend/manager/report_building/addUser',
+                        page: this.page,
+                        report_building_id:url,
+                        name:this.name,
+                        mobile:this.mobile,
+                        sex:this.form.resource,
+                        description:this.description
+                    }, this.header);
+                    //console.log(data); 这个console是获取活的usertoken
+                    // let datas = Object.assign(data, t);
+                    // console.log(data);
+                    utils.ajax({
+                        data: data,
+                        success: (res) => {
+                            // console.log(res.data);
+                            if (res.data.code == -2) {
+                                this.$message.error(res.data.msg);
+                                return false;
+                            } else if (res.data.code == 1) {
+                                // alert(res.data.data.address);
+                                this.$message.success(res.data.msg);
+                                this.dialogFormVisible = false;
+                                this.getreport();
+                            } else if (res.data.code == 0) {
+                                this.$message.error(res.data.msg);
+                                return false;
+                            }
+                            // console.log(data);
+                        },
+                        error: function (res) {
+                            console.log('error' + res)
+                        }
+                    })
+                }
+            },
+            // 过滤器
+            filters: {
+                statusFilterType(status) {
+                    const statusMap = {'1': '有意向', '2': '看房', '3': '前订购协议', '4': '签合同', '5': '付款'};
+                    return statusMap[status];
+                },
+            }
+        });
+        //关闭右键菜单
+        window.onclick = function (e) {
+            myvue.$data.show = false;
+        }
+
+        // 百度地图API功能
+        // var map = new BMap.Map("allmap");    // 创建Map实例
+        // map.centerAndZoom(new BMap.Point(myvue.tableData.lng, myvue.tableData.lat), 11);  // 初始化地图,设置中心点坐标和地图级别
+        // //添加地图类型控件
+        // map.addControl(new BMap.MapTypeControl({
+        //     mapTypes: [
+        //         BMAP_NORMAL_MAP,
+        //         BMAP_HYBRID_MAP
+        //     ]
+        // }));
+        // map.setCurrentCity("宿迁");          // 设置地图显示的城市 此项是必须设置的
+        // map.enableScrollWheelZoom(true);     //开启鼠标滚轮缩放
+    </script>
+</block>

@@ -1,0 +1,831 @@
+<extend name="base/common"/>
+
+<block name="body">
+    <style>
+        .el-header {
+            color: #333;
+            line-height: 60px;
+            text-align: right;
+            font-size: 12px
+        }
+
+        .el-aside {
+            color: #333;
+        }
+
+        #menu {
+            position: absolute;
+        }
+
+        .el-menu {
+            box-shadow: 0 0 5px #ddd;
+            z-index: 99;
+            border: 1px solid #ddd;
+        }
+
+        .el-menu-item {
+            color: #555;
+            border-bottom: 1px solid #f3f3f3;
+        }
+
+        .el-menu-item:focus,
+        .el-menu-item:hover {
+            background-color: #e6e9ed;
+            color: #ff5100
+        }
+
+        a {
+            text-decoration: none
+        }
+
+        .el-menu li {
+            height: 35px;
+            line-height: 35px;
+        }
+
+        /***2019/10/14 limao公海列表*/
+        html, body {
+            background-color: #f5f5f5 !important;
+        }
+
+        * {
+            list-style: none;
+            text-decoration: none;
+        }
+
+        .share_hosue_all {
+            padding: 0px;
+        }
+
+        .share_house_list_txt {
+            overflow: hidden !important;
+            white-space: nowrap !important;
+            text-overflow: ellipsis !important;
+            word-break: normal !important;
+            /*line-height: 1.7;*/
+        }
+        .share_house_card{
+            background-color: #fff;
+            /*padding: 0 5px 1px;*/
+            font-size: 0.85rem;
+            box-shadow: 1px 1px 5px #999;
+        }
+        p{
+            margin: 0px;
+        }
+        .share_house_p{
+            padding: 5px 0;
+
+        }
+        .share_hous_divall{
+            padding: 5px 10px 10px;
+        }
+        .share_house_pay{
+            font-size: 0.95rem;
+            color: #FF5501;
+        }
+        .share_house_money_col{
+            color: #999;
+        }
+        .share_house_name_ti{
+            padding: 3px 0;
+        }
+        .time {
+            font-size: 13px;
+            color: #999;
+        }
+
+        .bottom {
+            margin-top: 13px;
+            line-height: 12px;
+        }
+
+        .button {
+            padding: 0;
+            float: right;
+        }
+
+        .image {
+            width: 100%;
+            display: block;
+        }
+
+        .clearfix:before,
+        .clearfix:after {
+            display: table;
+            content: "";
+        }
+
+        .clearfix:after {
+            clear: both
+        }
+        .share_house_mar{
+            margin: 5px 5px 5px 5px;
+            font-size: 0.85rem;
+            width: 23.7%!important;
+        }
+    </style>
+    <div id="app" v-hide>
+        <el-container>
+            <el-container v-loading="loading">
+                <el-header height="70px">
+                    <el-row>
+                        <el-col :span="5">
+                            <div class="grid-content bg-purple-dark">
+                                <div style="float: left;">
+
+                                    <el-button type="primary" @click="handleForm(0)" icon="el-icon-plus" size="small">
+                                    </el-button>
+
+                                    <!--<el-button type="danger" icon="el-icon-delete" size="small" @click="open">-->
+                                    <!--</el-button>-->
+                                </div>
+                            </div>
+                        </el-col>
+                        <el-col :span="19" style="float: right">
+                            <el-row>
+                                <el-col :span="24">
+                                    <div style="float: right;">
+                                        <el-input size="small" placeholder="请输入搜索内容" prefix-icon="el-icon-search"
+                                                  v-model="input2">
+                                        </el-input>
+                                    </div>
+                                </el-col>
+                            </el-row>
+                        </el-col>
+                    </el-row>
+                </el-header>
+                <el-main style="margin-top: -15px;">
+                    <el-row>
+                        <a href="./info.html">
+                        <el-col :span="7" class="share_house_mar" v-for="item in share_house" :key="item" >
+                            <el-card :body-style="{ padding: '0px' }">
+                                <img :src="item.houseImg" class="image">
+                                <div style="padding: 14px;">
+                                    <el-row :gutter="22" class="share_house_name_ti">
+                                        <el-col :span="15">
+                                            <div class="grid-content bg-purple share_house_list_txt">
+                                                {{item.houseName}}
+                                            </div>
+                                        </el-col>
+                                        <el-col :span="9" style="padding: 0;">
+                                            <div class="grid-content bg-purple share_house_pay">{{item.housePay}}万</div>
+                                        </el-col>
+                                    </el-row>
+                                    <p class="share_house_p">
+                                        <span class="share_house_money_col">房屋户型 : </span> <span>{{item.houseSpec}}</span>
+                                    </p>
+                                    <p class="share_house_p">
+                                        <span class="share_house_money_col">装修情况 : </span> <span>{{item.houseReno}}</span>
+                                    </p>
+                                </div>
+                            </el-card>
+                        </el-col>
+                        </a>
+                    </el-row>
+
+
+                </el-main>
+                <el-footer style="text-align: center">
+                    <!-- <el-pagination style="text-align: center" hide-on-single-page background layout="prev, pager, next"
+                        :total="50">
+                    </el-pagination> -->
+                    <el-button type="text" icon="el-icon-arrow-left" size="medium" :disabled="page == 1"
+                               @click="prevPage">上一页
+                    </el-button>
+                    <el-button type="text" size="medium" @click="nextPage" :disabled="nextBtn">下一页<i
+                            class="el-icon-arrow-right el-icon--right"></i></el-button>
+
+                </el-footer>
+            </el-container>
+        </el-container>
+        <transition name="el-zoom-in-top">
+            <div id="menu" v-show="show">
+                <el-row class="tac">
+                    <el-col>
+                        <el-menu active-text-color="#000">
+                            <!-- <template v-for="menuItems in menuItem">
+                                <a :href="menuItems.src">
+                                    <el-menu-item>
+                                        <span slot="title">{{menuItems.title}}</span>
+                                    </el-menu-item>
+                                </a>
+                            </template> -->
+
+                        </el-menu>
+                    </el-col>
+                </el-row>
+            </div>
+        </transition>
+
+    </div>
+</block>
+<block name="js">
+    <script type="text/javascript">
+        let user_data = JSON.parse('{:cache("user_data")}');
+        console.log(user_data);
+        let clickTimer = null;
+        var myvue = new Vue({
+            el: '#app',
+            data: {
+                tableData: [],
+                lists: [],
+                value: '',
+                search: '',
+                input2: '',
+                show: false,
+                drawer: false,
+                direction: 'btt',
+                dialogFormVisible: false,
+                formVisible: false,
+                activeName: 'one',
+                activeIndex: '1',
+                activeIndex2: '1',
+                customer: {id: ""},
+                customer_id: 0,
+                forms: [
+                    {
+                        field: [
+                            {'title': '姓名', 'field': 'name', 'value': 'name', 'type': 'text'},
+                            {
+                                'title': '性别',
+                                'field': 'sex',
+                                'value': [{'title': '男', 'value': 1}, {'title': '女', 'value': 2}],
+                                'type': 'region'
+                            },
+                            {'title': '联系方式', 'field': 'mobile', 'value': 'mobile', 'type': 'text'},
+                            {'title': '邮箱', 'field': 'email', 'value': 'email', 'type': 'text'},
+                            {
+                                'title': '客源类型',
+                                'field': 'type',
+                                'value': [{'title': '买房', 'value': 1}, {'title': '卖房', 'value': 2}, {
+                                    'title': '租房',
+                                    'value': 3
+                                }],
+                                'type': 'region'
+                            },
+                            {'title': '备注', 'field': 'remark', 'value': 'remark', 'type': 'textarea'},
+                            {
+                                'title': '店铺',
+                                'field': 'store_id',
+                                'value': [
+                                    {'title': '房妈妈宝龙店', 'value': 1}
+                                ],
+                                'type': 'region'
+                            }
+                        ],
+                        action: 'Customer/add',
+                        title: '添加客源',
+                        list: 'tableData'
+                    },
+                    {
+                        field: [
+                            {'title': '标题', 'field': 'title', 'value': 'name', 'type': 'text'},
+                            {'title': '备注', 'field': 'content', 'value': 'remark', 'type': 'textarea'},
+                        ],
+                        action: 'customer_follow/addCustomerFollow',
+                        title: '添加跟进记录',
+                    },
+                    {
+                        field: [
+                            {'title': '标题', 'field': 'title', 'value': 'name', 'type': 'text'},
+                            {'title': '内容', 'field': 'content', 'value': 'content', 'type': 'textarea'},
+                            {'title': '签约金额', 'field': 'money', 'type': 'number'},
+                            {'title': '签约时间', 'field': 'sign_time', 'type': 'date'},
+
+                        ],
+                        action: 'houseSign/add',
+                        title: '添加签约',
+                    }
+                ],
+                formDom: {},
+                form: {},
+                loading: false,
+                customerFollows: [],
+                followOption: {},
+                tabs: [
+                    {
+                        label: '客源跟进',
+                        name: 'customer_follow',
+                        table: [
+                            {
+                                label: '跟进客源',
+                                prop: 'title',
+                            },
+                            {
+                                label: "跟进内容",
+                                prop: 'content',
+                            },
+                            {
+                                label: '业务类型',
+                                prop: 'type',
+                            },
+                            {
+                                label: '跟进时间',
+                                prop: 'Y'
+                            }
+                        ],
+                        query: {
+                            url: 'extend/manager/customer_follow/lists',
+                        },
+                        operate: false,
+                        edit: true,
+                    },
+                    {
+                        label: '房源列表',
+                        name: 'three',
+                        table: [
+                            {
+                                label: '房源标题',
+                                prop: 'title',
+                            },
+                            {
+                                label: "面积",
+                                prop: 'house_size',
+                            },
+                            {
+                                label: '层数',
+                                prop: 'house_floor',
+                            },
+                            {
+                                label: '房源地址',
+                                prop: 'address'
+                            },
+                            {
+                                label: '价格',
+                                prop: 'price'
+                            }
+                        ],
+                        query: {
+                            url: 'extend/manager/House/lists',
+                            house_type_id: 1,
+                            type: 1
+                        },
+                        operate: true,
+                        add: true,
+                        document: true
+                    },
+                    {
+                        label: '签约记录',   // 用户签约记录
+                        name: 'four',
+                        table: [
+                            {
+                                label: '签约房源',
+                                prop: 'title',
+                            },
+                            {
+                                label: "签约金额",
+                                prop: 'money',
+                            },
+                            {
+                                label: '签约时间',
+                                prop: 'date',
+                            },
+                            {
+                                label: '签约方',
+                                prop: 'customer_info.name'
+                            },
+                            {
+                                label: '签约进度',
+                                prop: 'status'
+                            }
+                        ],
+                        query: {
+                            url: 'extend/manager/houseSign/listByCustomer',
+                        },
+                        operate: false,
+                    }
+                ],
+                tabIndex: 0,
+                formIndex: 0,
+                datas: [],
+                datasPage: 1,
+                datasNextBtn: true,
+                header: {user_token: user_data.user_token.user_token, store_id: user_data.store_user_info.store_id},
+                page: 1,
+                nextBtn: true,
+                currentDate: new Date(),
+                share_house:[
+                    {
+                        houseImg:'https://ss2.bdstatic.com/70cFvnSh_Q1YnxGkpoWK1HF6hhy/it/u=3876132473,387412407&fm=26&gp=0.jpg',
+                        houseName:'凯琳瑞 高层12楼 两室两厅 精装修 飞机户型 靠近楚街',
+                        housePay:'80',
+                        houseSpec:'两室两厅一厨',
+                        houseReno:'精装修'
+                    }, {
+                        houseImg:'https://ss0.bdstatic.com/70cFuHSh_Q1YnxGkpoWK1HF6hhy/it/u=38388762,1858707592&fm=26&gp=0.jpg',
+                        houseName:'锦华名园 中层7层',
+                        housePay:'120.52',
+                        houseSpec:'两室一厅',
+                        houseReno:'精装修'
+                    },{
+                        houseImg:'https://ss3.bdstatic.com/70cFv8Sh_Q1YnxGkpoWK1HF6hhy/it/u=2080328499,4256216596&fm=15&gp=0.jpg',
+                        houseName:'项王小区二期 5层',
+                        housePay:'65.2',
+                        houseSpec:'两室两厅一卫',
+                        houseReno:'精装修'
+                    },{
+                        houseImg:'https://ss0.bdstatic.com/70cFvHSh_Q1YnxGkpoWK1HF6hhy/it/u=2762389516,3274811802&fm=11&gp=0.jpg',
+                        houseName:'金港家园6栋 高层',
+                        housePay:'102',
+                        houseSpec:'三室两厅',
+                        houseReno:'精装修'
+                    },{
+                        houseImg:'https://ss3.bdstatic.com/70cFv8Sh_Q1YnxGkpoWK1HF6hhy/it/u=1904916052,1545533069&fm=26&gp=0.jpg',
+                        houseName:'凯琳瑞 高层12楼 两室两厅 精装修 飞机户型 靠近楚街',
+                        housePay:'305.6',
+                        houseSpec:'三室一厅',
+                        houseReno:'精装修'
+                    },
+                    {
+                        houseImg:'https://ss1.bdstatic.com/70cFvXSh_Q1YnxGkpoWK1HF6hhy/it/u=3078055907,3183920694&fm=15&gp=0.jpg',
+                        houseName:'凯琳瑞 高层12楼 两室两厅 精装修 飞机户型 靠近楚街',
+                        housePay:'82.46',
+                        houseSpec:'两室一厅',
+                        houseReno:'精装修'
+                    },
+                    {
+                        houseImg:'https://ss2.bdstatic.com/70cFvnSh_Q1YnxGkpoWK1HF6hhy/it/u=1729524195,3348919503&fm=26&gp=0.jpg',
+                        houseName:'凯琳瑞 高层12楼 两室两厅 精装修 飞机户型 靠近楚街',
+                        housePay:'110.6',
+                        houseSpec:'三室一厅',
+                        houseReno:'精装修'
+                    },
+                    //第八个开始的数据需要途欢图片
+                    {
+                        houseImg:'https://ss0.bdstatic.com/70cFvHSh_Q1YnxGkpoWK1HF6hhy/it/u=502692644,1042550020&fm=26&gp=0.jpg',
+                        houseName:'学府文苑 精装好房，楼层中户',
+                        housePay:'50.6',
+                        houseSpec:'三室一厅一卫',
+                        houseReno:'精装修'
+                    },
+                    {
+                        houseImg:'https://ss1.bdstatic.com/70cFuXSh_Q1YnxGkpoWK1HF6hhy/it/u=3048495948,3419974821&fm=26&gp=0.jpg',
+                        houseName:'恒大翡翠华庭精装标准房',
+                        housePay:'104.6',
+                        houseSpec:'两室两厅一卫',
+                        houseReno:'精装修'
+                    },
+                    {
+                        houseImg:'https://ss1.bdstatic.com/70cFvXSh_Q1YnxGkpoWK1HF6hhy/it/u=691192220,2238667031&fm=15&gp=0.jpg',
+                        houseName:'东城天下小区豪华装修房',
+                        housePay:'202.2',
+                        houseSpec:'三室一厅',
+                        houseReno:'精装修'
+                    },
+                    {
+                        houseImg:'https://ss1.bdstatic.com/70cFvXSh_Q1YnxGkpoWK1HF6hhy/it/u=3067579510,1608748393&fm=15&gp=0.jpg',
+                        houseName:'运河春天一梯两户飞机户型',
+                        housePay:'76',
+                        houseSpec:'三室两厅两卫',
+                        houseReno:'普通装修'
+                    },
+                    {
+                        houseImg:'https://ss0.bdstatic.com/70cFuHSh_Q1YnxGkpoWK1HF6hhy/it/u=1062881607,2802867211&fm=26&gp=0.jpg',
+                        houseName:'紧邻京东 千秋时代新城装修',
+                        housePay:'92.6',
+                        houseSpec:'三室两厅',
+                        houseReno:'精装修'
+                    },
+                    {
+                        houseImg:'https://ss1.bdstatic.com/70cFuXSh_Q1YnxGkpoWK1HF6hhy/it/u=1209073798,1455247555&fm=26&gp=0.jpg',
+                        houseName:'浦东国际花园多层四楼精装修三室',
+                        housePay:'96.8',
+                        houseSpec:'三室一厅',
+                        houseReno:'精装修'
+                    },
+                    {
+                        houseImg:'https://ss2.bdstatic.com/70cFvnSh_Q1YnxGkpoWK1HF6hhy/it/u=1783856170,351807832&fm=15&gp=0.jpg',
+                        houseName:'世纪半岛青青小镇5室',
+                        housePay:'132.6',
+                        houseSpec:'五室两厅一卫',
+                        houseReno:'精装修'
+                    },
+                    {
+                        houseImg:'https://ss3.bdstatic.com/70cFv8Sh_Q1YnxGkpoWK1HF6hhy/it/u=3672085417,4191761490&fm=15&gp=0.jpg',
+                        houseName:'学府人家精装小户型',
+                        housePay:'70.2',
+                        houseSpec:'三室一厅',
+                        houseReno:'精装修'
+                    },
+                    {
+                        houseImg:'https://ss1.bdstatic.com/70cFvXSh_Q1YnxGkpoWK1HF6hhy/it/u=1625497855,1896640272&fm=26&gp=0.jpg',
+                        houseName:'御景龙庭 小高层精装修两室',
+                        housePay:'76.6',
+                        houseSpec:'两室一厅',
+                        houseReno:'精装修'
+                    },
+                    {
+                        houseImg:'https://ss1.bdstatic.com/70cFuXSh_Q1YnxGkpoWK1HF6hhy/it/u=2035918281,4060774536&fm=26&gp=0.jpg',
+                        houseName:'金融财富广场单身公寓',
+                        housePay:'37.8',
+                        houseSpec:'一室一厅一卫',
+                        houseReno:'精装修'
+                    },
+                    {
+                        houseImg:'https://ss0.bdstatic.com/70cFuHSh_Q1YnxGkpoWK1HF6hhy/it/u=2522532076,3156888400&fm=15&gp=0.jpg',
+                        houseName:'中豪国际星城精装90平',
+                        housePay:'88',
+                        houseSpec:'两室两厅一卫',
+                        houseReno:'普通装修'
+                    },
+                    {
+                        houseImg:'https://ss1.bdstatic.com/70cFuXSh_Q1YnxGkpoWK1HF6hhy/it/u=3754391487,3083159994&fm=15&gp=0.jpg',
+                        houseName:'锦华名园新装修未住过房子',
+                        housePay:'66.3',
+                        houseSpec:'两室一厅一卫',
+                        houseReno:'精装修'
+                    },
+                    {
+                        houseImg:'https://ss1.bdstatic.com/70cFvXSh_Q1YnxGkpoWK1HF6hhy/it/u=1814335012,3603117475&fm=26&gp=0.jpg',
+                        houseName:'文昌花园学区房',
+                        housePay:'102',
+                        houseSpec:'两室两厅一卫',
+                        houseReno:'普通装修'
+                    },
+                ]
+            },
+            created() {
+                this.getCustomers();
+            },
+            methods: {
+                getCustomers() {
+                    this.loading = true;
+                    let data = Object.assign({
+                        url: 'extend/manager/Customer/lists',
+                        page: this.page,
+                    }, this.header);
+                    console.log(data);
+                    utils.ajax({
+                        data: data,
+                        success: (res) => {
+                            this.loading = false;
+                            console.log(res.data);
+                            if (res.data.code == -2) {
+                                this.$message.error(res.data.msg);
+                                return false;
+                            }
+
+                            this.nextBtn = data.length == 10 ? false : true;
+                        },
+                        error: function (res) {
+                            console.log('error' + res)
+                        }
+                    })
+                    this.formDom = this.forms[this.formIndex];
+                },
+                prevPage() {
+                    this.page--;
+                    this.getCustomers();
+                },
+                nextPage() {
+                    this.page++;
+                    this.getCustomers();
+                },
+                datasPrevPage() {
+                    this.datasPage--;
+                    this.getTabDataList();
+                },
+                datasNextPage() {
+                    this.datasPage++;
+                    this.getTabDataList();
+                },
+                handleSelect(key, keyPath) {
+                    console.log(key, keyPath);
+                },
+                open() {
+                    this.$confirm('此操作将永久删除该文件, 是否继续?', '提示', {
+                        confirmButtonText: '确定',
+                        cancelButtonText: '取消',
+                        type: 'warning'
+                    }).then(() => {
+                        this.$message({
+                            type: 'success',
+                            message: '删除成功!'
+                        });
+                    }).catch(() => {
+                        this.$message({
+                            type: 'info',
+                            message: '已取消删除'
+                        });
+                    });
+                },
+                openDetails(row, column, event) {
+                    event.preventDefault();
+                    row.id = row.id || 0;
+                    if (row.id == 0) {
+                        this.$message.error('数据异常');
+                        return;
+                    }
+                    // this.show = this.show ? false : true;
+                    this.show = true;
+                    var menu = document.querySelector("#menu");
+                    menu.style.left = event.clientX + 'px';
+                    menu.style.top = event.clientY + 'px';
+                },
+                // row_click(){
+                //     if (clickTimer) {
+                //         window.clearTimeout(clickTimer);
+                //         clickTimer = null;
+                //     }
+                //     clickTimer = window.setTimeout(function() {
+                //         // your click process code here
+                //         myvue.$data.drawer = true;
+                //     }, 200);
+                // },
+                row_clicks(row, event) {
+                    if (clickTimer) {
+                        window.clearTimeout(clickTimer);
+                        clickTimer = null;
+                    }
+                    // 确定选中的客源
+                    let customer = Object.assign({}, row);
+                    this.customer = customer;
+                    // your click process code here
+                    this.dialogFormVisible = true;
+
+                    this.getTabDataList();
+                },
+                showDialog() {
+                    this.dialogFormVisible = true;
+                },
+                handleClick(tab, event) {
+                    // 绑定tab的index值（下标）
+                    this.tabIndex = tab.index;
+                    this.datasPage = 1;
+                    this.getTabDataList();
+
+                },
+                // 显示表单
+                handleForm(index, row) {
+                    this.formDom = this.forms[index];
+
+                    this.formVisible = true;
+                    if (index == 1 || index == 2) {
+                        this.form = {
+                            "house_id": row.id,
+                            "customer_id": this.customer.id,
+                            "house_type_id": 1
+                        }
+                        // 获取跟进状态列表
+                        if (this.formIndex != index) {
+                            this.getFollowOption();
+                            this.formIndex = index;
+                        }
+                    }
+                },
+                onSubmit() {
+                    this.formDom.loading = true;
+
+                    let data = Object.assign({
+                        url: 'extend/manager/' + this.formDom.action
+                    }, this.form, this.header);
+                    console.log(data);
+                    utils.ajax({
+                        data: data,
+                        success: (res) => {
+                            // console.log(res.data);
+
+                            // this.$message({
+                            //     type: 'info',
+                            //     message: res.data.msg
+                            // });
+                            this.formDom.loading = false;
+                            if (res.data.code) {
+                                this.$message({
+                                    message: res.data.msg,
+                                    type: 'success'
+                                });
+                                this[this.formDom.list].unshift(this.form);
+
+                                this.form = {};  // 如果添加成功，表单就清空
+                                this.formVisible = false; // 隐藏表单
+
+                            } else {
+                                this.$message.error(res.data.msg);
+                            }
+                        },
+                        error: function (res) {
+                            console.log('error' + res)
+                        }
+                    })
+                },
+                tableToExcel() {
+                    //要导出的json数据
+
+
+                    let str = `名称\t,联系方式\t,性别\t,类型\t,备注\n`;
+                    let tabs = ['name', 'mobile', 'sex_str', 'type_str', 'remark'];
+                    //增加\t为了不让表格显示科学计数法或者其他格式
+
+                    for (let customer of this.tableData) {
+                        for (let tab of tabs) {
+                            str += `${customer[tab] + '\t'},`;
+                        }
+                        // str += `${jsonData[i][item] + '\t'},`
+                        str += '\n';
+                    }
+                    //encodeURIComponent解决中文乱码
+                    let uri = 'data:text/csv;charset=utf-8,\ufeff' + encodeURIComponent(str);
+                    //通过创建a标签实现
+                    let link = document.createElement("a");
+                    link.href = uri;
+                    //对下载的文件命名
+                    link.download = "json数据表.csv";
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                },
+                // test(){
+                //     var aoa = [
+                //         ['姓名', '性别', '年龄', '注册时间'],
+                //         ['张三', '男', 18, new Date()],
+                //         ['李四', '女', 22, new Date()]
+                //     ];
+                //     var sheet = XLSX.utils.aoa_to_sheet(aoa);
+                //     openDownloadDialog(sheet2blob(sheet), '导出.xlsx');
+                // }
+                getTabDataList() {
+                    if (!Number(this.tabIndex)) return false;
+                    this.lists = [];
+                    this.loading = true;
+                    let query = {};
+                    //  如果当前选中的是 客源跟进 或者是 签约记录
+                    if (this.tabIndex == 1 || this.tabIndex == 3) {
+                        query = {customer_id: this.customer.id};
+                    }
+                    //  房源列表暂时不需要 第二个源对象   所以为 空 query = {}
+
+                    let data = Object.assign({'page': this.datasPage},
+                        this.tabs[this.tabIndex - 1].query, query, this.header);
+                    console.log(data);
+                    utils.ajax({
+                        data: data,
+                        success: (res) => {
+                            console.log(res.data);
+                            this.loading = false;  // 关闭加载动画
+                            let count = 0
+                            if (res.data.code == 1) {
+                                let data = res.data.data;
+                                this.lists = data;
+                                count = data.length;
+                            }
+                            this.datasNextBtn = count >= 10 ? false : true;
+
+
+                        },
+                        error: function (res) {
+                            console.log('error' + res)
+                        }
+                    })
+                },
+                getFollowOption() {
+                    let follows = Object.keys(this.followOption);
+                    // console.log('follows.length: ' + follows.length);
+                    if (follows.length == 0) {
+                        this.formDom.loading = true;
+
+                        let data = Object.assign({url: 'extend/manager/HouseFollow/getFollowOption'}, this.header);
+                        utils.ajax({
+                            data: data,
+                            success: (res) => {
+                                this.formDom.loading = false;  // 关闭加载动画
+                                if (res.data.code == 1) {
+                                    let value = [];
+                                    for (let i of res.data.data) {
+                                        value.push({'title': i.key, 'value': i.id});
+                                    }
+                                    let data = {
+                                        'title': '跟进状态', 'field': 'step',
+                                        'value': value,
+                                        'type': 'region'
+                                    };
+                                    this.formDom.field.push(data);
+                                    // 将跟进状态的结构对象，赋值给followOption 对象，以便下次使用时不需要再次获取
+                                    this.followOption = data;
+                                }
+                            },
+                            error: function (res) {
+                                console.log('error' + res);
+                            }
+                        })
+                    } else {
+                        this.formDom.field.push(this.followOption);
+                    }
+                }
+            },
+            // 过滤器
+            filters: {
+                statusFilterType(status) {
+                    const statusMap = {'1': '有意向', '2': '看房', '3': '前订购协议', '4': '签合同', '5': '付款'};
+                    return statusMap[status];
+                },
+            }
+        });
+        //关闭右键菜单
+        window.onclick = function (e) {
+            myvue.$data.show = false;
+        }
+    </script>
+</block>
+

@@ -1,0 +1,668 @@
+<extend name="base/common"/>
+<!--周前 -- 于2019-10-17日修改-->
+<!--2019/11/11 狸猫再次修改，新增编辑弹窗-->
+<block name="body">
+    <style>
+        #app {
+            margin: 0;
+        }
+
+        .popover {
+            overflow: hidden;
+            overflow-y: auto;
+            height: 350px;
+        }
+
+        .img_banner {
+            height: 100%;
+            margin: 0 auto !important;
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+        }
+
+        /*基础信息*/
+        .text {
+            font-size: 14px;
+        }
+
+        .item {
+            padding: 18px 0;
+        }
+
+        .box-card {
+            width: 90%;
+            margin: 0 auto;
+        }
+
+        .box-card {
+            margin-bottom: 20px !important;
+        }
+        .v-modal{
+            z-index: 0!important;
+        }
+        .prop_auto{
+            max-height: 350px;
+            overflow-y: scroll;
+        }
+        .el-dialog{
+            z-index: 1;
+        }
+    </style>
+    <div id="app" v-hide>
+        <div style="padding:0 20px;">
+            <template>
+                <el-table
+                        :data="tableData"
+                        style="width: 100%">
+                    <el-table-column
+                            label="房源"
+                            prop="title">
+                    </el-table-column>
+                    <el-table-column
+                            label="联系人"
+                            prop="owner_name">
+                    </el-table-column>
+                    <el-table-column
+                            label="小区"
+                            prop="area_id">
+                    </el-table-column>
+                    <el-table-column
+                            label="地址"
+                            prop="address">
+                    </el-table-column>
+                    <el-table-column
+                            label="价格"
+                            prop="total_price">
+                    </el-table-column>
+                    <el-table-column
+                            label="发布时间"
+                            prop="create_time">
+                    </el-table-column>
+                    <el-table-column
+                            align="right">
+                        <template slot="header" slot-scope="scope">
+                            <el-input
+                                    v-model="search"
+                                    size="mini"
+                                    placeholder="小区,房源"/>
+                        </template>
+                        <template slot-scope="scope">
+                            <el-button
+                                    size="mini"
+                                    @click="handleEdit(scope.$index, scope.row)">查看
+                            </el-button>
+                        </template>
+                    </el-table-column>
+                </el-table>
+            </template>
+            <el-footer style="text-align: center">
+                <!-- <el-pagination style="text-align: center" hide-on-single-page background layout="prev, pager, next"
+                    :total="50">
+                </el-pagination> -->
+                <el-button type="text" icon="el-icon-arrow-left" size="medium"
+                           @click="prevPage"  :disabled="disabled_downBtn">上一页
+                </el-button>
+                <el-button type="text" size="medium" @click="nextPage" :disabled="nextBtn">下一页<i
+                        class="el-icon-arrow-right el-icon--right"></i></el-button>
+
+            </el-footer>
+            <!--弹窗-->
+            <el-dialog
+                    title="提示"
+                    :visible.sync="dialogVisible"
+                    width="90%">
+                <div width="90%" class="popover">
+                    <!--轮播-->
+                    <template>
+                        <el-carousel indicator-position="outside">
+                            <el-carousel-item v-for="item in show_images" :key="item">
+                                <img :src="item" alt="" class="img_banner" :preview-src-list="show_images">
+                            </el-carousel-item>
+                        </el-carousel>
+                    </template>
+                    <!--基础信息-->
+                    <el-card class="box-card">
+                        <h2>{{ row.title }}</h2>
+                        <div class="text item">
+                            总价:{{row.total_price}}
+                        </div>
+                        <div class="text item">
+                            价格:{{row.price}}
+                        </div>
+                        <div class="text item">
+                            发布时间:{{row.create_time}}
+                        </div>
+                        <div class="text item">
+                            地址:{{row.address}}
+                        </div>
+                    </el-card>
+                    <!--房屋配置及描述-->
+                    <el-card class="box-card">
+                        <h2>房屋配置及描述</h2>
+                        <div class="text item">
+                            朝向:{{row.total_price}}
+                        </div>
+                        <div class="text item">
+                            装修:{{row.price}}
+                        </div>
+                        <div class="text item">
+                            创建时间:{{row.create_time}}
+                        </div>
+                        <div class="text item">
+                            装修风格:{{row.style}}
+                        </div>
+                        <div class="text item">
+                            类型:{{row.house_type}}
+                        </div>
+                        <div class="text item">
+                            电梯:{{row.elevator}}
+                        </div>
+                        <div class="text item">
+                            户型:{{row.house_config_param}}
+                        </div>
+                        <div class="text item">
+                            户数:{{row.users_number}}
+                        </div>
+                        <div class="text item">
+                            单价:{{row.unit_price}}
+                        </div>
+                        <div class="text item">
+                            面积:{{row.house_size}}平方
+                        </div>
+                    </el-card>
+                </div>
+                <span slot="footer" class="dialog-footer">
+                <el-button type="warning" @click="blog_hous">转入二手房</el-button>
+                <el-button type="primary" @click="tel">{{ row.owner_name }}电话</el-button>
+                </span>
+            </el-dialog>
+
+
+            <!--编辑-->
+            <el-dialog title="编辑房源" :visible.sync="houseFormVisible">
+                <el-tabs v-model="addHouseTab" class="prop_auto">
+                    <el-tab-pane label="基本信息" name="addHouseTab-info">
+                        <el-form ref="formHouse" :model="row" label-width="80px" :inline="true" size="mini"
+                                 label-position="left">
+
+                            <el-row>
+                                <el-divider content-position="left">基本信息</el-divider>
+                                <el-col :span="6">
+                                    <el-form-item label="几室几厅">
+                                        <el-input v-model.number="row.house_config_param"></el-input>
+                                    </el-form-item>
+                                </el-col>
+
+                                <el-col :span="6">
+                                    <el-form-item label="房源面积">
+                                        <el-input v-model="row.house_size" placeholder="单位：平方"></el-input>
+                                    </el-form-item>
+                                </el-col>
+                                <el-col :span="6">
+                                    <el-form-item label="房源单价">
+                                        <el-input v-model="row.price" placeholder="单位：元"></el-input>
+                                    </el-form-item>
+                                </el-col>
+                                <el-col :span="6">
+                                    <el-form-item label="房源总价">
+                                        <el-input v-model="row.total_price" placeholder="单位：万"></el-input>
+                                    </el-form-item>
+                                </el-col>
+                                <el-col :span="6">
+                                    <el-form-item label="房源朝向">
+                                        <el-select v-model="row.direction" placeholder="请选择朝向">
+                                            <el-option label="东" value="东"></el-option>
+                                            <el-option label="南" value="南"></el-option>
+                                            <el-option label="西" value="西"></el-option>
+                                            <el-option label="北" value="北"></el-option>
+                                            <el-option label="东西" value="东西"></el-option>
+                                            <el-option label="南北" value="南北"></el-option>
+                                        </el-select>
+                                    </el-form-item>
+                                </el-col>
+                                <el-col :span="6">
+                                    <el-form-item label="装修程度">
+                                        <el-select v-model="row.decoration" placeholder="请选择装修程度">
+                                            <el-option label="精装修" value="精装修"></el-option>
+                                            <el-option label="简单装修" value="简单装修"></el-option>
+                                            <el-option label="中档装修" value="中档装修"></el-option>
+                                            <el-option label="高档装修" value="高档装修"></el-option>
+                                            <el-option label="毛坯" value="毛坯"></el-option>
+                                        </el-select>
+                                    </el-form-item>
+                                </el-col>
+                                <el-col :span="6">
+                                    <el-form-item label="装修风格">
+                                        <el-select v-model="row.style" placeholder="请选择装修风格">
+                                            <el-option label="欧洲古典" value="欧洲古典"></el-option>
+                                            <el-option label="都市自然" value="都市自然"></el-option>
+                                            <el-option label="现代奢华" value="现代奢华"></el-option>
+                                            <el-option label="现代简约" value="现代简约"></el-option>
+                                        </el-select>
+                                    </el-form-item>
+                                </el-col>
+                                <el-col :span="6">
+                                    <el-form-item label="付款方式">
+                                        <el-select v-model="row.pay_type" placeholder="请选择付款方式">
+                                            <el-option label="全款" value="全款"></el-option>
+                                            <el-option label="按揭" value="按揭"></el-option>
+                                        </el-select>
+                                    </el-form-item>
+                                </el-col>
+
+                            </el-row>
+                            <el-row>
+                                <el-divider content-position="left">业主信息</el-divider>
+                                <el-col :span="6">
+                                    <el-form-item label="姓名">
+                                        <el-input v-model="row.owner_name"></el-input>
+                                    </el-form-item>
+                                </el-col>
+                                <el-col :span="6">
+                                    <el-form-item label="电话">
+                                        <el-input v-model="row.owner_mobile"></el-input>
+                                    </el-form-item>
+                                </el-col>
+                            </el-row>
+                            <el-row>
+                                <el-divider content-position="left">详细信息</el-divider>
+                                <el-col :span="6">
+                                    <el-form-item label="房源标题">
+                                        <el-input v-model="row.title"></el-input>
+                                    </el-form-item>
+                                </el-col>
+
+                                <el-col :span="6">
+                                    <el-form-item label="附近学校">
+                                        <el-input v-model="row.near_school"></el-input>
+                                    </el-form-item>
+                                </el-col>
+                                <el-col :span="6">
+                                    <el-form-item label="附近地铁">
+                                        <el-input v-model="row.near_subway"></el-input>
+                                    </el-form-item>
+                                </el-col>
+                                <el-col :span="6">
+                                    <el-form-item label="层数">
+                                        <el-input v-model="row.house_floor"></el-input>
+                                    </el-form-item>
+                                </el-col>
+                                <el-col :span="6">
+                                    <el-form-item label="房源标签">
+                                        <el-select multiple v-model="row.feature" placeholder="请选择房源标签">
+                                            <el-option label="电梯房" value="电梯房"></el-option>
+                                            <el-option label="真实在售" value="真实在售"></el-option>
+                                            <el-option label="满五唯一" value="满五唯一"></el-option>
+                                            <el-option label="靠近地铁" value="靠近地铁"></el-option>
+                                            <el-option label="低价" value="低价"></el-option>
+                                            <el-option label="学区" value="学区"></el-option>
+                                            <el-option label="生活便利" value="生活便利"></el-option>
+                                            <el-option label="南北通透" value="南北通透"></el-option>
+                                            <el-option label="大型社区" value="大型社区"></el-option>
+                                            <el-option label="大品牌" value="大品牌"></el-option>
+                                            <el-option label="优质物业" value="优质物业"></el-option>
+                                        </el-select>
+                                    </el-form-item>
+                                </el-col>
+
+                                <el-col :span="6">
+                                    <el-form-item label="房源类型">
+                                        <el-select v-model="row.house_type" placeholder="请选择房源类型">
+                                            <el-option label="公寓" value="公寓"></el-option>
+                                            <el-option label="小高层" value="小高层"></el-option>
+                                            <el-option label="商铺" value="商铺"></el-option>
+                                            <el-option label="洋房" value="洋房"></el-option>
+                                            <el-option label="车库" value="车库"></el-option>
+                                            <el-option label="商品住宅" value="商品住宅"></el-option>
+                                            <el-option label="别墅" value="别墅"></el-option>
+                                        </el-select>
+                                    </el-form-item>
+                                </el-col>
+                                <el-col :span="6">
+                                    <el-form-item label="电梯">
+                                        <el-select v-model="row.elevator" placeholder="请选择电梯">
+                                            <el-option label="未知" value="0"></el-option>
+                                            <el-option label="有" value="1"></el-option>
+                                            <el-option label="无" value="2"></el-option>
+                                        </el-select>
+                                    </el-form-item>
+                                </el-col>
+                                <el-col :span="6">
+                                    <el-form-item label="房源产权">
+                                        <el-select v-model="row.house_property" placeholder="请选择产权">
+                                            <el-option label="私产" value="私产"></el-option>
+                                            <el-option label="公产" value="公产"></el-option>
+                                            <el-option label="小产权" value="小产权"></el-option>
+                                            <el-option label="单位产权" value="单位产权"></el-option>
+                                            <el-option label="使用权" value="使用权"></el-option>
+                                            <el-option label="协议房" value="协议房"></el-option>
+                                            <el-option label="售后产权" value="售后产权"></el-option>
+                                        </el-select>
+                                    </el-form-item>
+                                </el-col>
+                                <el-col :span="6">
+                                    <el-form-item label="房源简介">
+                                        <el-input type="textarea" v-model="row.house_intro"></el-input>
+                                    </el-form-item>
+                                </el-col>
+                            </el-row>
+                        </el-form>
+                    </el-tab-pane>
+                    <el-tab-pane label="图片" name="addHouseTab-img">
+                        <el-upload
+                                action="http://127.0.0.1:8000/request/upload"
+                                name="image"
+                                :file-list="fileList"
+                                list-type="picture-card"
+                                :on-success="uploadSuccess"
+                                :on-preview="handlePictureCardPreview"
+                                :on-remove="handleRemove">
+                            <i class="el-icon-plus"></i>
+                        </el-upload>
+                        <el-dialog :visible.sync="dialogVisible">
+                            <img width="100%" :src="dialogImageUrl" alt="">
+                        </el-dialog>
+                    </el-tab-pane>
+                </el-tabs>
+                <div slot="footer" class="dialog-footer">
+                    <el-button @click="houseFormVisible = false">取 消</el-button>
+                    <el-button type="primary" @click="shift">确 定</el-button>
+                </div>
+            </el-dialog>
+
+        </div>
+    </div>
+</block>
+<block name="js">
+    <script type="text/javascript">
+        let user_data = JSON.parse('{:cache("user_data")}');
+        var myvue = new Vue({
+                el: '#app',
+                data: {
+                    tableData: [],
+                    fileList:[],
+                    disabled_downBtn:true,
+                    nextBtn: false,
+                    search: '',
+                    page: 1,
+                    page_size: 10,
+                    // search_name: '',
+                    dialogVisible: false,
+                    formHouse: {
+                        area_arr: '',
+                        area_arr_qu: '',
+                        area_arr_zhen: '',
+                        house_index_str: '',
+                        house_index_xiaoqu: '',
+                        house_index_loudong: '',
+                        house_index_danyuan: '',
+                        house_index_hao: '',
+                        house_config_param: '',
+                        house_config_shi: '',
+                        house_config_ting: '',
+                        house_config_chu: '',
+                        house_config_wei: '',
+                        house_floor: '',
+                        house_size: '',
+                        unit_price: '',
+                        price: '',
+                        commission: '',
+                        house_config: '',
+                        decoration: '',
+                        style: '',
+                        direction: '',
+                        down_payment: '',
+                        house_rent: '',
+                        cash_pledge: '',
+                        shortest_lease: '',
+                        pay_type: '',
+                        delivery_time: '',
+                        owner_name: '',
+                        owner_mobile: '',
+                        bottom_price: '',
+                        secret_remark: '',
+                        title: '',
+                        name: '',
+                        open_time: '',
+                        type: '',
+                        is_share: '',
+                        house_type: '',
+                        address: '',
+                        lat: '',
+                        lng: '',
+                        near_school: '',
+                        near_subway: '',
+                        users_number: '',
+                        elevator: '',
+                        house_property: '',
+                        year: '',
+                        feature: [],
+                        house_intro: '',
+                        show_images: [],
+                    },
+                    show_images: [],
+                    houseFormVisible: false,
+
+                    addHouseTab: 'addHouseTab-info',
+                    row: [],
+                    url: 'https://fuss10.elemecdn.com/e/5d/4a731a90594a4af544c0c25941171jpeg.jpeg',
+                    srcList: [],
+                    show: true,
+                    header: {user_token: user_data.user_token.user_token, store_id: user_data.store_user_info.store_id},
+                    dialogImageUrl: '',
+                    Neshow_img:[],
+                },
+                created() {
+                    this.house58_lists();
+                },
+                methods: {
+                    //点击转入二手房编辑功能
+                    blog_hous(){
+                        this.dialogVisible = false;
+                        this.houseFormVisible = true;
+                    },
+                    tel() {
+                        this.$notify({
+                            title: '提示',
+                            message: this.row.owner_name + '电话:' + this.row.owner_mobile,
+                            duration: 0
+                        });
+                    },
+                    uploadSuccess(res) {
+                        var i = res.indexOf("{");
+                        var s = res.indexOf("<script");
+                        var ret = res.substr(i, s);
+                        ret = JSON.parse(ret);
+                        this.Neshow_img.push(ret.data.data);
+                        console.log(ret.data.data);
+                    },
+                    handlePictureCardPreview(file) {
+                        this.dialogImageUrl = file.url;
+                        this.dialogVisible = true;
+                    },
+                    handleRemove(file, fileList) {
+                        console.log(file, fileList);
+                    },
+                    handleEdit(index, row) {
+                        console.log(index, row);
+                        this.dialogVisible = true;
+                        //  电梯判断
+                        if (row.elevator == 1) {
+                            row.elevator = '有'
+                        } else {
+                            row.elevator = '无'
+                        }
+                        this.row = row;
+                        this.show_images = row.show_images.split(',');
+                        for(let i in this.show_images){
+                            this.fileList.push({name: '',url:this.show_images[i]});
+                            this.Neshow_img.push(this.show_images[i]);
+                        }
+                    },
+                    //58房源列表
+                    house58_lists() {
+
+                        let data = Object.assign({
+                            url: 'extend/manager/house58/lists',
+                            page: this.page,
+                            page_size: this.page_size,
+                            search_name: this.search,
+                        }, this.header);
+                        utils.ajax({
+                            data: data,
+                            success: (res) => {
+                                if (res.data.code == -2) {
+                                    this.$message.error(res.data.msg);
+                                    return false;
+                                }
+                                if (res.data.code == 1) {
+                                    let data = res.data.data;
+                                    this.tableData = data;
+                                    console.log(this.tableData);
+                                    if(this.page == 1){
+                                        if (this.tableData.length < 10) {
+                                            this.disabled_downBtn = true;
+                                            this.nextBtn = true;
+                                        }else {
+                                            this.disabled_downBtn = true;
+                                            this.nextBtn = false;
+                                        }
+                                    }else{
+                                        if (this.tableData.length < 10) {
+                                            this.disabled_downBtn = false;
+                                            this.nextBtn = true;
+                                        }else {
+                                            this.disabled_downBtn = false;
+                                            this.nextBtn = false;
+                                        }
+                                    }
+                                }
+                            },
+                            error: (res) => {
+                                console.log('error' + res)
+                            }
+                        })
+                    },
+                    // 转入二手房
+                    shift() {
+                        this.row.feature = this.row.feature || [];
+                        let feature = this.row.feature.join(',') || '';
+                        let Neshow_img = this.Neshow_img.join(',');
+                        let data = Object.assign({
+                            url: 'extend/manager/house58/shift',
+                            page: this.page,
+                            id:this.row.id,
+                            area_id:this.row.area_id,
+                            house_index_loudong:this.row.house_index_loudong,
+                            house_index_danyuan:this.row.house_index_danyuan,
+                            house_index_hao: this.row.house_index_hao,
+                            house_config_param: this.row.house_config_param,
+                            house_config_shi: this.row.house_config_shi,
+                            house_config_ting: this.row.house_config_ting,
+                            house_config_chu: this.row.house_config_chu,
+                            house_config_wei: this.row.house_config_wei,
+                            house_floor: this.row.house_floor,
+                            house_size: this.row.house_size,
+                            unit_price: this.row.unit_price,
+                            price: this.row.price,
+                            commission: this.row.commission,
+                            house_config: this.row.house_config,
+                            decoration: this.row.decoration,
+                            style: this.row.style,
+                            direction: this.row.direction,
+                            down_payment: this.row.down_payment,
+                            house_rent: this.row.house_rent,
+                            cash_pledge: this.row.cash_pledge,
+                            shortest_lease: this.row.shortest_lease,
+                            pay_type: this.row.pay_type,
+                            delivery_time: this.row.delivery_time,
+                            owner_name: this.row.owner_name,
+                            owner_mobile: this.row.owner_mobile,
+                            bottom_price: this.row.bottom_price,
+                            secret_remark: this.row.secret_remark,
+                            title: this.row.title,
+                            name: this.row.name,
+                            open_time: this.row.open_time,
+                            type: this.row.type,
+                            is_share: this.row.is_share,
+                            house_type: this.row.house_type,
+                            address: this.row.address,
+                            near_school: this.row.near_school,
+                            near_subway: this.row.near_subway,
+                            users_number: this.row.users_number,
+                            elevator: this.row.elevator,
+                            house_property: this.row.house_property,
+                            year: this.row.year,
+                            feature: feature,
+                            house_intro: this.row.house_intro,
+                            show_images: Neshow_img,
+                        }, this.header);
+                        console.log(data);
+                        utils.ajax({
+                            data: data,
+                            success: (res) => {
+                                console.log(JSON.stringify((res)));
+
+                                if (res.data.code == -2) {
+                                    this.$message.error(res.data.msg);
+                                    // this.row.feature = this.row.feature.split(',');
+                                    return false;
+                                }
+                                if (res.data.code == 1) {
+                                    let data = res.data.data;
+                                    // this.tableData = data;
+                                    this.$message.success(res.data.msg);
+                                    this.houseFormVisible = false;
+                                    this.house58_lists();
+                                }
+                                if (res.data.code == 0) {
+                                    this.$message(res.data.msg);
+                                    // this.row.feature = this.row.feature.split(',');
+                                    this.houseFormVisible = false;
+                                }
+                                this.dialogVisible = false;
+                            },
+                            error: (res) => {
+                                this.houseFormVisible = false;
+                                this.dialogVisible = false;
+                                console.log('error' + res)
+                            }
+                        })
+                    },
+                    prevPage() {
+
+                            if (this.page > 1) {
+                                this.page--;
+                                this.house58_lists();
+                            }
+
+                        if (this.page == 1) {
+                            this.disabled_downBtn = true;
+                            this.nextBtn = false;
+                        }
+                    },
+                    nextPage() {
+
+                            this.page++;
+                            this.house58_lists();
+
+                        if(this.page != 1) {
+                            this.disabled_downBtn = false;
+                        }
+                        // this.getHouses(this.formHeader.house_type ? this.formHeader.house_type : 1);
+                    },
+                },
+                watch: {
+                    'search': function () {
+                        this.house58_lists();
+                    }
+                }
+            })
+        ;
+    </script>
+</block>
+
+

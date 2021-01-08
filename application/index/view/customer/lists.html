@@ -1,0 +1,1160 @@
+<extend name="base/common"/>
+
+<block name="body">
+    <style>
+        .el-header {
+            color: #333;
+            line-height: 60px;
+            text-align: right;
+            font-size: 12px
+        }
+
+        .el-aside {
+            color: #333;
+        }
+
+        #menu {
+            position: absolute;
+        }
+
+        .el-menu {
+            box-shadow: 0 0 5px #ddd;
+            z-index: 99;
+            border: 1px solid #ddd;
+        }
+
+        .el-menu-item {
+            color: #555;
+            border-bottom: 1px solid #f3f3f3;
+        }
+
+        .el-menu-item:focus,
+        .el-menu-item:hover {
+            background-color: #e6e9ed;
+            color: #ff5100
+        }
+
+        a {
+            text-decoration: none
+        }
+
+        .el-menu li {
+            height: 35px;
+            line-height: 35px;
+        }
+
+        .label_price {
+            position: absolute;
+            left: -65px;
+            top: 10px;
+        }
+    </style>
+    <div id="app" v-hide>
+        <el-container>
+            <el-container v-loading="loading">
+                <el-header height="60px">
+                    <el-row>
+                        <el-col :span="5">
+                            <div class="grid-content bg-purple-dark">
+                                <div style="float: left;">
+
+                                    <el-button type="primary" @click="handleForm(0)" icon="el-icon-plus" size="small">
+                                    </el-button>
+
+                                    <!--                                    <el-button type="danger" icon="el-icon-delete" size="small" @click="open">-->
+                                    <!--                                    </el-button>-->
+                                </div>
+                            </div>
+                        </el-col>
+                        <el-col :span="19" style="float: right">
+                            <el-row>
+                                <el-col :span="24">
+                                    <div style="float: right;">
+                                        <el-input size="small" placeholder="请输入手机号" prefix-icon="el-icon-search"
+                                                  @keyup.enter.native="searchEnterFun"
+                                                  v-model="input2">
+                                        </el-input>
+                                    </div>
+                                </el-col>
+                            </el-row>
+                        </el-col>
+                    </el-row>
+                </el-header>
+                <el-main style="margin-top: -15px;">
+                    <el-table @row-contextmenu="openDetails" @row-dblclick="row_clicks" :data="tableData"
+                              style="width: 100%;border-top:1px solid #eee">
+                        <el-table-column show-overflow-tooltip label="客源编号" prop="id">
+                        </el-table-column>
+                        <el-table-column show-overflow-tooltip label="登记时间" prop="update_time">
+                        </el-table-column>
+                        <el-table-column show-overflow-tooltip label="状态" prop="status">
+                        </el-table-column>
+                        <el-table-column show-overflow-tooltip label="姓名" prop="nickname">
+                        </el-table-column>
+                        <el-table-column show-overflow-tooltip label="电话" prop="mobile">
+                        </el-table-column>
+                        <el-table-column show-overflow-tooltip label="性别" prop="sex_str">
+                        </el-table-column>
+                        <!-- <el-table-column
+                            label="需求内容"
+                            width="180">
+                            <template slot-scope="scope">
+                               <p v-for="(v,k) in scope.row.need" :key="k">{{v.house_config}}</p>
+                            </template>
+                        </el-table-column> -->
+                        <el-table-column show-overflow-tooltip label="类型" prop="type_str">
+                        </el-table-column>
+                        <el-table-column show-overflow-tooltip label="面积( ㎡ )" prop="area">
+                        </el-table-column>
+                        <el-table-column show-overflow-tooltip label="需求户型" prop="housing_type">
+                        </el-table-column>
+                        <el-table-column show-overflow-tooltip label="意向小区" prop="intention_zone">
+                        </el-table-column>
+                        <el-table-column show-overflow-tooltip label="备注" prop="remark">
+                        </el-table-column>
+                        <el-table-column show-overflow-tooltip label="经纪人" prop="store_uer_name">
+                        </el-table-column>
+                        <el-table-column
+                                fixed="right"
+                                label="操作"
+                                width="100">
+                            <template slot-scope="scope">
+                                <el-button @click="chat_click(scope.row)" type="text" size="small">聊天</el-button>
+                                <el-button @click="delete_click(scope.$index,scope.row)" type="text" size="small">删除
+                                </el-button>
+                            </template>
+                        </el-table-column>
+                    </el-table>
+                </el-main>
+                <el-footer style="text-align: center">
+                    <!-- <el-pagination style="text-align: center" hide-on-single-page background layout="prev, pager, next"
+                        :total="50">
+                    </el-pagination> -->
+                    <el-button type="text" icon="el-icon-arrow-left" size="medium" :disabled="page == 1"
+                               @click="prevPage">上一页
+                    </el-button>
+                    <el-button type="text" size="medium" @click="nextPage" :disabled="nextBtn">下一页<i
+                            class="el-icon-arrow-right el-icon--right"></i></el-button>
+
+                </el-footer>
+            </el-container>
+        </el-container>
+        <transition name="el-zoom-in-top">
+            <div id="menu" v-show="show">
+                <el-row class="tac">
+                    <el-col>
+                        <el-menu active-text-color="#000">
+                            <!-- <template v-for="menuItems in menuItem">
+                                <a :href="menuItems.src">
+                                    <el-menu-item>
+                                        <span slot="title">{{menuItems.title}}</span>
+                                    </el-menu-item>
+                                </a>
+                            </template> -->
+
+                        </el-menu>
+                    </el-col>
+                </el-row>
+            </div>
+        </transition>
+        <el-drawer title="详细信息" :visible.sync="drawer" :direction="direction">
+            <span>我来啦!</span>
+        </el-drawer>
+        <el-dialog title="客源详情" :visible.sync="dialogFormVisible" width="70%">
+            <template>
+                <el-tabs v-model="activeName" @tab-click="handleClick" v-loading="loading">
+                    <template v-if="tabIndex == 1">
+                        <el-button icon="el-icon-plus" size="mini" class="formHeader-btn"
+                                   @click="handleForm(1)" style="margin-bottom: 15px">新增跟进
+                        </el-button>
+                    </template>
+                    <template v-if="tabIndex == 3">
+                        <el-button icon="el-icon-plus" size="mini" class="formHeader-btn"
+                                   @click="handleForm(2)" style="margin-bottom: 15px">新增签约
+                        </el-button>
+                    </template>
+                    <!--<template v-if="tabIndex == 3">-->
+                        <!--<el-button icon="el-icon-plus" size="mini" class="formHeader-btn"-->
+                                   <!--@click="handleForm(2)" style="margin-bottom: 15px">新增-->
+                        <!--</el-button>-->
+                    <!--</template>-->
+                    <el-tab-pane label="基本信息" name="one">
+                        <p>名称: {{customer.name}}</p>
+                        <p>手机号码: {{customer.mobile}}</p>
+                        <p>类型: {{customer.type_str}}
+                            <!-- <span v-if="customer.type == 1">买房</span>
+                                    <span v-else-if="customer.type == 2">卖房</span>
+                                    <span v-else-if="customer.type == 3">租房</span>
+                                    <span v-else>{{customer.type}}</span> -->
+                        </p>
+                        <p>备注: {{customer.remark}}</p>
+                        <p>添加时间: {{customer.create_time}}</p>
+                    </el-tab-pane>
+                    <el-tab-pane v-for="(v,k) in tabs" :label="v.label" :name="v.name" :key="k" v-if="k!=1">
+                        <el-table @row-contextmenu="openDetails" :data="lists"
+                                  style="width: 100%;border-top:1px solid #eee">
+                            <!-- <el-table-column type="selection" width="55">
+                                </el-table-column> -->
+                            <el-table-column v-for="(v1,k1) in v.table" show-overflow-tooltip :label="v1.label"
+                                             :prop="v1.prop">
+                            </el-table-column>
+                            <el-table-column label="操作" fixed="right" align="center" v-if="k==1">
+                                <template slot-scope="scope">
+                                    <el-button v-if="v.add" type="text" @click.native="handleForm(1, scope.row)"
+                                               :loading="loading">
+                                        <i class="el-icon-edit"></i>
+                                    </el-button>
+                                    <!--<el-button v-if="v.edit" type="text" @click.native="handleForm(1, scope.row)"-->
+                                    <!--:loading="loading">-->
+                                    <!--<i class="el-icon-edit"></i>-->
+                                    <!--</el-button>-->
+                                    <el-button v-if="v.document" type="text" @click.native="handleForm(2, scope.row)"
+                                               :loading="loading">
+                                        <i class="el-icon-document"></i>
+                                    </el-button>
+                                </template>
+                            </el-table-column>
+
+                        </el-table>
+
+                    </el-tab-pane>
+                    <div v-if="tabIndex != 0" style="text-align: center">
+                        <el-button type="text" icon="el-icon-arrow-left" size="medium" :disabled="datasPage == 1"
+                                   @click="datasPrevPage">上一页
+                        </el-button>
+                        <el-button type="text" size="medium" @click="datasNextPage" :disabled="datasNextBtn">下一页<i
+                                class="el-icon-arrow-right el-icon--right"></i></el-button>
+                    </div>
+                </el-tabs>
+
+
+            </template>
+        </el-dialog>
+        <!--        新增客源-->
+        <el-dialog width="60%" :title="formDom.title" :visible.sync="formVisible">
+            <el-form ref="form" :model="form" label-width="80px">
+                <!--max-height: 350px;-->
+                <div style="overflow: scroll;">
+                    <template v-for="(fields, k) in formDom.field">
+                        <!--<template v-if="fields.array_state == 'newly_added'">-->
+                        <!--{{fields}}-->
+                        <!--</template>-->
+                        <template v-if="fields.array_state == 'newly_added'&& fields.field=='intentional_price'">
+                                <el-form-item>
+                                    <label class="label_price">意向价格</label>
+                                    <el-row style="margin-top: 10px;margin-bottom: 10px;">
+                                        <el-col :span="11">
+                                            <div class="grid-content bg-purple">
+                                                <el-input v-model="form[fields.field]" placeholder="最低价格"></el-input>
+                                            </div>
+                                        </el-col>
+                                        <el-col :span="2">
+                                            <div class="grid-content bg-purple-light" style="text-align: center;">
+                                                一
+                                            </div>
+                                        </el-col>
+                                        <el-col :span="11">
+                                            <div class="grid-content bg-purple">
+                                                <el-input v-model="form[fields.field_price]" placeholder="最高价格"></el-input>
+                                            </div>
+                                        </el-col>
+                                    </el-row>
+                                </el-form-item>
+                        </template>
+                        <template v-if="fields.array_state == 'newly_added'&&fields.field == 'housing_type'">
+                                <el-form-item>
+                                    <label  class="label_price">需求户型</label>
+                                    <el-row style="margin-top: 10px;margin-bottom: 10px;">
+                                        <el-col :span="6">
+                                            <div class="grid-content bg-purple">
+                                                <el-input v-model="form[fields.housing_type_shi]" placeholder="几室"></el-input>
+                                            </div>
+                                        </el-col>
+                                        <el-col :span="3">
+                                            <div class="grid-content bg-purple-light" style="text-align: center;">
+                                                一
+                                            </div>
+                                        </el-col>
+                                        <el-col :span="6">
+                                            <div class="grid-content bg-purple">
+                                                <el-input v-model="form[fields.housing_type_ting]" placeholder="几厅"></el-input>
+                                            </div>
+                                        </el-col>
+                                        <el-col :span="3">
+                                            <div class="grid-content bg-purple-light" style="text-align: center;">
+                                                一
+                                            </div>
+                                        </el-col>
+                                        <el-col :span="6">
+                                            <div class="grid-content bg-purple">
+                                                <el-input v-model="form[fields.housing_type_wei]" placeholder="几卫"></el-input>
+                                            </div>
+                                        </el-col>
+                                    </el-row>
+                                </el-form-item>
+                        </template>
+                        <template v-if="fields.array_state == 'newly_added'&&fields.field=='area'">
+                                <el-form-item>
+                                    <label class="label_price">意向面积</label>
+                                    <el-row style="margin-top: 10px;margin-bottom: 10px;">
+                                        <el-col :span="11">
+                                            <div class="grid-content bg-purple">
+                                                <el-input v-model="form[fields.field]" placeholder="最小面积"></el-input>
+                                            </div>
+                                        </el-col>
+                                        <el-col :span="2">
+                                            <div class="grid-content bg-purple-light" style="text-align: center;">
+                                                一
+                                            </div>
+                                        </el-col>
+                                        <el-col :span="11">
+                                            <div class="grid-content bg-purple">
+                                                <el-input v-model="form[fields.max_area]" placeholder="最大面积"></el-input>
+                                            </div>
+                                        </el-col>
+                                    </el-row>
+                                </el-form-item>
+                        </template>
+
+                        <template v-if="fields.type == 'text'&& fields.array_state != 'newly_added'">
+                            <el-form-item :label="fields.title">
+                                <el-input v-model="form[fields.field]"></el-input>
+                            </el-form-item>
+                        </template>
+                        <template v-else-if="fields.type == 'number'&&fields.array_state != 'newly_added'">
+                            <el-form-item :label="fields.title">
+                                <el-input type="number" v-model="form[fields.field]"></el-input>
+                            </el-form-item>
+                        </template>
+                        <template v-else-if="fields.type == 'region'&&fields.array_state != 'newly_added'">
+                            <el-form-item :label="fields.title">
+                                <el-select v-model="form[fields.field]" placeholder="请选择">
+                                    <template v-for="values in fields.value">
+                                        <el-option :label="values.title" :value="values.value"></el-option>
+                                    </template>
+                                </el-select>
+                            </el-form-item>
+                        </template>
+                        <template v-else-if="fields.type == 'region'&&fields.array_state != 'newly_added'">
+                            <el-form-item :label="fields.title">
+                                <el-select v-model="form[fields.field]" placeholder="请选择">
+                                    <template v-for="values in fields.value">
+                                        <el-option :label="values.title" :value="values.value"></el-option>
+                                    </template>
+                                </el-select>
+                            </el-form-item>
+                        </template>
+                        <template v-else-if="fields.type == 'date'&&fields.array_state != 'newly_added'">
+                            <el-form-item :label="fields.title">
+                                <el-date-picker v-model="form[fields.field]" type="datetime" placeholder="选择日期"
+                                                value-format="yyyy-MM-dd mm:ss">
+                                </el-date-picker>
+                            </el-form-item>
+                        </template>
+                        <template v-else-if="fields.type == 'textarea'&&fields.array_state != 'newly_added'">
+                            <el-form-item :label="fields.title">
+                                <el-input :autosize="{ minRows: 4}" type="textarea" :rows="4"
+                                          v-model="form[fields.field]">
+                                </el-input>
+                            </el-form-item>
+                        </template>
+                        <template v-else-if="fields.type == 'texts'&&fields.array_state != 'newly_added'">
+                            <el-form-item :label="fields.title">
+                                <el-input type="text" @focus="row_clicks_hous"
+                                          v-model="form[fields.fields]" readonly="readonly" placeholder="请选择">
+                                </el-input>
+                                <el-input type="text" style="display: none"
+                                          v-model="form[fields.field]">
+                                </el-input>
+                            </el-form-item>
+                        </template>
+                        <template v-else-if="fields.type == 'upload_picture'&&fields.array_state != 'newly_added'">
+                            <el-form-item :label="fields.title">
+                                <el-upload action="https://jsonplaceholder.typicode.com/posts/" list-type="picture-card"
+                                           :on-preview="handlePictureCardPreview" :on-remove="handleRemove">
+                                    <i class="el-icon-plus"></i>
+                                </el-upload>
+                                <el-dialog :visible.sync="dialogVisible">
+                                    <img width="100%" :src="dialogImageUrl" alt="">
+                                </el-dialog>
+                            </el-form-item>
+                        </template>
+                    </template>
+                </div>
+                <el-form-item>
+                    <el-button type="primary" @click="onSubmit">新增</el-button>
+                    <el-button @click="formVisible = false">取消</el-button>
+                </el-form-item>
+            </el-form>
+        </el-dialog>
+
+        <el-dialog
+                title="提示"
+                :visible.sync="delete_dialogVisible"
+                width="30%">
+            <span>确定要删除吗？</span>
+            <span slot="footer" class="dialog-footer">
+                <el-button @click="delete_dialogVisible = false">取 消</el-button>
+                <el-button type="primary" @click="delete_click_alert()">确 定</el-button>
+            </span>
+        </el-dialog>
+
+
+        <el-dialog :title="tabs[1].label" :visible.sync="dialogFormVisibles" width="70%">
+            <template>
+                <!--datasNextBtnss-->
+                <!--listsss-->
+
+                <el-table @row-contextmenu="openDetails" :data="listsss" @row-click="row_click"
+                          style="width: 100%;border-top:1px solid #eee">
+                    <el-table-column v-for="(v1,k1) in tabs[1].table" show-overflow-tooltip :label="v1.label"
+                                     :prop="v1.prop">
+                    </el-table-column>
+                </el-table>
+                <div style="text-align: center">
+                    <el-button type="text" icon="el-icon-arrow-left" size="medium" :disabled="datasNextBtnss == 1"
+                               @click="">上一页</el-button>
+                    <el-button type="text" size="medium" @click="" :disabled="datasNextBtnss">下一页<i
+                            class="el-icon-arrow-right el-icon--right"></i></el-button>
+                </div>
+
+            </template>
+
+        </el-dialog>
+    </div>
+</block>
+<block name="js">
+    <script type="text/javascript">
+        let user_data = JSON.parse('{:cache("user_data")}');
+        console.log(user_data);
+
+        let clickTimer = null;
+        var myvue = new Vue({
+            el: '#app',
+            data: {
+                delete_dialogVisible: false,
+                tableData_index: 0,
+                tableData: [],
+                lists: [],
+                listsss:[],
+                value: '',
+                search: '',
+                input2: '',
+                show: false,
+                drawer: false,
+                direction: 'btt',
+                dialogFormVisible: false,
+                dialogFormVisibles:false,
+                formVisible: false,
+                activeName: 'one',
+                activeIndex: '1',
+                activeIndex2: '1',
+                customer: {id: ""},
+                customer_id: 0,
+                forms: [
+                    {
+                        field: [
+                            {
+                                'title': '客户姓名',
+                                'field': 'name',
+                                'value': 'name',
+                                'type': 'text'
+                            },
+                            {
+                                'title': '客户性别',
+                                'field': 'sex',
+                                'value': [{'title': '男', 'value': 1}, {'title': '女', 'value': 2}],
+                                'type': 'region'
+                            },
+                            {'title': '手机号码', 'field': 'mobile', 'value': 'mobile', 'type': 'text'},
+                            {
+                                'title': '意向价格',
+                                'field': 'intentional_price',
+                                'field_price':'max_intentional_price',
+                                'value': 'text',
+                                'type': 'text',
+                                'array_state': 'newly_added'
+                            },
+                            {'title': '意向小区', 'field': 'intention_zone', 'value': 'text', 'type': 'text'},
+                            {
+                                'title': '房屋户型',
+                                'field': 'housing_type',
+                                'housing_type_shi':'housing_type_shi',
+                                'housing_type_ting':'housing_type_ting',
+                                'housing_type_wei':'housing_type_wei',
+                                'value': 'text',
+                                'type': 'text',
+                                'array_state': 'newly_added'
+                            },
+                            {
+                                'title': '意向面积',
+                                'field': 'area',
+                                'max_area':'max_area',
+                                'value': 'text',
+                                'type': 'text',
+                                'array_state': 'newly_added'
+                            },
+                            {
+                                'title': '客源类型',
+                                'field': 'type',
+                                'value': [{'title': '买房', 'value': 1}, {'title': '卖房', 'value': 2}, {
+                                    'title': '租房',
+                                    'value': 3
+                                }],
+                                'type': 'region'
+                            },
+                            {
+                                'title': '客源级别',
+                                'field': 'tourist_source_level',
+                                'value': [{'title': 'A级客户', 'value': 'A级客户'}, {
+                                    'title': 'B级客户',
+                                    'value': 'B级客户'
+                                }, {'title': 'C级客户', 'value': 'C级客户'}],
+                                'type': 'region'
+                            },
+                            {'title': '备注', 'field': 'remark', 'value': 'remark', 'type': 'textarea'},
+
+                            // {
+                            //     'title': '店铺',
+                            //     'field': 'store_id',
+                            //     'value': [
+                            //         { 'title': '房妈妈宝龙店', 'value': 1 }
+                            //     ],
+                            //     'type': 'region'
+                            // }
+                        ],
+                        action: 'Customer/add',
+                        title: '添加客源',
+                        list: 'tableData'
+                    },
+                    {
+                        field: [
+                            {'title': '选择房源', 'field': 'house_id', 'value': 'house_id', 'type': 'texts',fields:'house_text'},
+                            {'title': '跟进内容', 'field': 'content', 'value': 'remark', 'type': 'textarea'},
+                        ],
+                        action: 'customerFollow/addCustomerFollow',
+                        title: '添加跟进记录',
+                    },
+                    {
+                        field: [
+                            // {'title': '标题', 'field': 'title', 'value': 'name', 'type': 'text'},
+                            {'title': '签约内容', 'field': 'content', 'value': 'content', 'type': 'textarea'},
+                            {'title': '签约金额', 'field': 'money', 'type': 'number'},
+                            {'title': '签约时间', 'field': 'sign_time', 'type': 'date'},
+                            {'title': '选择房源', 'field': 'house_id', 'value': 'house_id', 'type': 'texts',fields:'house_text'},
+
+                        ],
+                        action: 'houseSign/add',
+                        title: '添加签约',
+                    }
+                ],
+                formDom: {},
+                form: {
+                    name: '',
+                    sex: '',
+                    mobile: '',
+                    area: '',
+                    max_area: '',
+                    intentional_price: '',
+                    max_intentional_price: '',
+                    intention_zone: '',
+                    housing_type: '',
+                    housing_type_shi: '',
+                    housing_type_ting: '',
+                    housing_type_wei: '',
+                    type: '',
+                    tourist_source_level: '',
+                    remark: ''
+                },
+                loading: false,
+                customerFollows: [],
+                followOption: {},
+                tabs: [
+                    {
+                        label: '客源跟进',
+                        name: 'customer_follow',
+                        table: [
+                            // {
+                            //     label: '跟进客源',
+                            //     prop: 'title',
+                            // },
+                            {
+                                label: "跟进房源",
+                                prop: 'house_id_title',
+                            },
+                            {
+                                label: "跟进内容",
+                                prop: 'content',
+                            },
+                            {
+                                label: '跟进进度',
+                                prop: 'step',
+                            },
+                            {
+                                label: '跟进时间',
+                                prop: 'Y'
+                            }
+                        ],
+                        query: {
+                            url: 'extend/manager/customer_follow/lists',
+                        },
+                        operate: false,
+                        edit: true,
+                    },
+                    {
+                        label: '房源列表',
+                        name: 'three',
+                        table: [
+                            {
+                                label: '房源标题',
+                                prop: 'title',
+                            },
+                            {
+                                label: "面积",
+                                prop: 'house_size',
+                            },
+                            {
+                                label: '层数',
+                                prop: 'house_floor',
+                            },
+                            {
+                                label: '房源地址',
+                                prop: 'address'
+                            },
+                            {
+                                label: '价格',
+                                prop: 'price'
+                            }
+                        ],
+                        query: {
+                            url: 'extend/manager/House/lists',
+                            house_type_id: 1,
+                            type: 1
+                        },
+                        operate: true,
+                        add: true,
+                        document: true
+                    },
+                    {
+                        label: '签约记录',   // 用户签约记录
+                        name: 'four',
+                        table: [
+                            {
+                                label: '签约房源',
+                                prop: 'house_id_title',
+                            },
+                            {
+                                label: "签约金额",
+                                prop: 'money',
+                            },
+                            {
+                                label: '签约时间',
+                                prop: 'date',
+                            },
+                            {
+                                label: '签约客户',
+                                prop: 'customer_info.name'
+                            },
+                            {
+                                label: '签约进度',
+                                prop: 'option.title'
+                            }
+                        ],
+                        query: {
+                            url: 'extend/manager/houseSign/listByCustomer',
+                        },
+                        operate: false,
+                    }
+                ],
+                tabIndex: 0,
+                formIndex: 0,
+                datas: [],
+                datasPage: 1,
+                datasNextBtn: true,
+                datasNextBtnss:true,
+                header: {user_token: user_data.user_token.user_token, store_id: user_data.store_user_info.store_id},
+                page: 1,
+                nextBtn: true
+            },
+            created() {
+                this.getCustomers();
+            },
+            methods: {
+                delete_click(index, ret) {
+                    console.log(index);
+                    // alert(JSON.stringify(ret));
+                    this.tableData_index = index;
+                    this.delete_dialogVisible = true;
+
+                },
+                delete_click_alert() {
+                    this.delete_dialogVisible = false;
+                    let id = this.tableData[this.tableData_index].id;
+                    let data = Object.assign({
+                        url: 'extend/manager/Customer/del',
+                        ids: id
+                    }, this.header);
+                    utils.ajax({
+                        data: data,
+                        success: (res) => {
+                            if (res.data.code == -2 || res.data.code == 0) {
+                                this.$message.error(res.data.msg);
+                                return false;
+                            } else if (res.data.code == 1) {
+                                this.$message.success(res.data.msg);
+                                this.tableData.splice(this.tableData_index, 1);
+                            }
+                        },
+                        error: function (res) {
+                            console.log('error' + res)
+                        }
+                    });
+                },
+                chat_click(ret) {
+                    if (ret.room_id == 0) {
+                        this.$message.error('该客户没有注册');
+                        return false;
+                    };
+                    window.top.postMessage({
+                        type: 1,
+                        data: {
+                            room_id: ret.room_id
+                        }
+                    }, '*');
+                },
+                searchEnterFun() {
+                    this.getCustomers();
+                },
+                getCustomers() {
+                    this.loading = true;
+                    let data = Object.assign({
+                        url: 'extend/manager/Customer/lists',
+                        search_name: this.input2,
+                        page: this.page,
+                    }, this.header);
+                    console.log(data);
+                    utils.ajax({
+                        data: data,
+                        success: (res) => {
+                            this.loading = false;
+                            console.log('1111', res.data);
+                            if (res.data.code == -2 && res.data.code != 1) {
+                                this.$message.error(res.data.msg);
+                                return false;
+                            }
+                            let typeList = {'1': '买房', '2': '卖房', '3': '租房'};
+                            let sexList = {'1': '男', '2': '女'};
+                            let data = res.data.data;
+                            console.log('2222', data);
+                            for (let i = 0; i < data.length; i++) {
+                                data[i].housing_type = data[i].housing_type || '';
+                                data[i].housing_type = data[i].housing_type.split('-');
+                                console.log(data[i].housing_type);
+                                if (data[i].housing_type == '') {
+                                    data[i].housing_type = '';
+                                } else {
+                                    data[i].housing_type = (data[i].housing_type[0] || 0) + '室' + (data[i].housing_type[1] || 0) + '厅' + (data[i].housing_type[2] || 0) + '卫';
+                                }
+                            };
+
+
+                            for (let key in data) {
+                                let type = data[key].type;
+
+                                if (typeList.hasOwnProperty(type)) {
+                                    data[key].type_str = typeList[type];
+                                } else {
+                                    data[key].type_str = type;
+                                }
+                                data[key].status = (data[key].status == 1) ? '正常' : '禁用';
+                                data[key].sex_str = sexList[data[key].sex] ? sexList[data[key].sex] : '';
+                            }
+                            // console.log(data);
+                            this.tableData = data;
+                            this.datas = this.tableData;
+                            console.log(data.length);
+                            this.nextBtn = data.length == 10 ? false : true;
+                        },
+                        error: function (res) {
+                            console.log('error' + res)
+                        }
+                    });
+                    this.formDom = this.forms[this.formIndex];
+                },
+                prevPage() {
+                    this.page--;
+                    this.getCustomers();
+                },
+                nextPage() {
+                    this.page++;
+                    this.getCustomers();
+                },
+                datasPrevPage() {
+                    this.datasPage--;
+                    this.getTabDataList();
+                },
+                datasNextPage() {
+                    this.datasPage++;
+                    this.getTabDataList();
+                },
+                handleSelect(key, keyPath) {
+                    console.log(key, keyPath);
+                },
+                open() {
+                    this.$confirm('此操作将永久删除该文件, 是否继续?', '提示', {
+                        confirmButtonText: '确定',
+                        cancelButtonText: '取消',
+                        type: 'warning'
+                    }).then(() => {
+                        this.$message({
+                            type: 'success',
+                            message: '删除成功!'
+                        });
+                    }).catch(() => {
+                        this.$message({
+                            type: 'info',
+                            message: '已取消删除'
+                        });
+                    });
+                },
+                openDetails(row, column, event) {
+                    event.preventDefault();
+                    row.id = row.id || 0;
+                    if (row.id == 0) {
+                        this.$message.error('数据异常');
+                        return;
+                    }
+                    // this.show = this.show ? false : true;
+                    this.show = true;
+                    var menu = document.querySelector("#menu");
+                    menu.style.left = event.clientX + 'px';
+                    menu.style.top = event.clientY + 'px';
+                },
+                row_click(e){
+                    console.log(e);
+                    this.form.house_id = e.id ;
+                    this.form.house_text = e.title ;
+                    this.dialogFormVisibles = false;
+                },
+                row_clicks_hous(){
+                    this.datasNextBtnss = 1;
+                    this.getTabDataListss();
+                    this.dialogFormVisibles = true;
+
+                },
+                row_clicks(row, event) {
+                    if (clickTimer) {
+                        window.clearTimeout(clickTimer);
+                        clickTimer = null;
+                    }
+                    // 确定选中的客源
+                    let customer = Object.assign({}, row);
+                    // 转换时间
+                    customer.create_time = to_date_time(customer.create_time);
+                    this.customer = customer;
+                    // your click process code here
+                    this.dialogFormVisible = true;
+
+                    this.getTabDataList();
+                },
+                showDialog() {
+                    this.dialogFormVisible = true;
+                },
+                handleClick(tab, event) {
+                    // 绑定tab的index值（下标）
+                    this.tabIndex = (tab.index==2)? 3 : tab.index;
+                    this.datasPage = 1;
+                    this.getTabDataList();
+
+                },
+                // 显示表单
+                handleForm(index, row) {
+                    this.formDom = this.forms[index];
+                    this.formVisible = true;
+                    if (index == 1 || index == 2) {
+                        row = row || {};
+                        this.form = {
+                            "house_id": row.id || 0,
+                            "customer_id": this.customer.id,
+                            "house_type_id": 1
+                        }
+                        // 获取跟进状态列表
+                        if (this.formIndex != index) {
+                            this.getFollowOption(index);
+                            this.formIndex = index;
+                        }
+                    }
+                },
+                onSubmit() {
+                    this.formDom.loading = true;
+
+                    let data = Object.assign({
+                        url: 'extend/manager/' + this.formDom.action
+                    }, this.form, this.header);
+                    console.log(data);
+                    //字符评价，新增客户的时候 价格区间
+
+
+                    if (data.url == 'extend/manager/Customer/add') {
+                        // console.log(data.url);
+                        if (!(/^1[3456789]\d{9}$/.test(data.mobile))) {
+                            this.$message.error("手机号码有误，请重填");
+                            return;
+                        }
+                        if (!data.remark) {
+                            this.$message.error("请填写备注");
+                            return;
+                        };
+                        if (this.form.area >= this.form.max_area ) {
+                            this.$message.error("请填写正确的面积段");
+                            return;
+                        }else if(this.form.intentional_price >= this.form.max_intentional_price){
+                            this.$message.error("请填写正确的价格区间");
+                            return;
+                        }
+
+                        data.intentional_price = this.form.intentional_price + '-' + this.form.max_intentional_price;
+                        data.housing_type = this.form.housing_type_shi + '-' + this.form.housing_type_ting + '-' + this.form.housing_type_wei;
+                        data.area = this.form.area + '-' + this.form.max_area;
+                        // console.log(data);
+                    };
+                    // alert(JSON.stringify(data));
+                    utils.ajax({
+                        data: data,
+                        success: (res) => {
+                            // console.log(res);
+                            if (!res) {
+                                this.$message.error('添加错误');
+                                return;
+                            }
+                            if (res.data.code == 0) {
+                                this.$message.error(res.data.msg);
+                                this.form = {};  // 如果添加成功，表单就清空
+                                this.formVisible = false; // 隐藏表单
+                                return;
+                            }
+                            this.formDom.loading = false;
+                            if (res.data.code == 1) {
+                                this.datasPage = 1;
+                                this.getTabDataList();
+
+                                this.formVisible = false;
+                                this.$message({
+                                    message: res.data.msg,
+                                    type: 'success'
+                                });
+
+                                let typeList = {'1': '买房', '2': '卖房', '3': '租房'};
+                                let sexList = {'1': '男', '2': '女'};
+                                let type = this.form.type;
+                                if (typeList.hasOwnProperty(type)) {
+                                    this.form.type_str = typeList[type];
+                                } else {
+                                    this.form.type_str = type;
+                                }
+                                this.form.sex_str = sexList[this.form.sex] ? sexList[this.form.sex] : '';
+
+                                this[this.formDom.list].unshift(this.form);
+
+                                this.getCustomers();//如果添加成功重新请求列表
+
+
+                                this.form = {};  // 如果添加成功，表单就清空
+                                this.formVisible = false; // 隐藏表单
+                                window.top.postMessage({
+                                    type: 2,
+                                    data: {}
+                                }, '*');
+                            } else {
+                                this.$message.error(res.data.msg);
+                            }
+                        },
+                        error: function (res) {
+                            this.formVisible = false;
+                            console.log('error' + res)
+                        }
+                    })
+                },
+                tableToExcel() {
+                    //要导出的json数据
+
+
+                    let str = `名称\t,联系方式\t,性别\t,类型\t,备注\n`;
+                    let tabs = ['name', 'mobile', 'sex_str', 'type_str', 'remark'];
+                    //增加\t为了不让表格显示科学计数法或者其他格式
+
+                    for (let customer of this.tableData) {
+                        for (let tab of tabs) {
+                            str += `${customer[tab] + '\t'},`;
+                        }
+                        // str += `${jsonData[i][item] + '\t'},`
+                        str += '\n';
+                    }
+                    //encodeURIComponent解决中文乱码
+                    let uri = 'data:text/csv;charset=utf-8,\ufeff' + encodeURIComponent(str);
+                    //通过创建a标签实现
+                    let link = document.createElement("a");
+                    link.href = uri;
+                    //对下载的文件命名
+                    link.download = "json数据表.csv";
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                },
+                // test(){
+                //     var aoa = [
+                //         ['姓名', '性别', '年龄', '注册时间'],
+                //         ['张三', '男', 18, new Date()],
+                //         ['李四', '女', 22, new Date()]
+                //     ];
+                //     var sheet = XLSX.utils.aoa_to_sheet(aoa);
+                //     openDownloadDialog(sheet2blob(sheet), '导出.xlsx');
+                // }
+                getTabDataList() {
+                    if (!Number(this.tabIndex)) return false;
+                    this.lists = [];
+                    this.loading = true;
+                    let query = {};
+                    //  如果当前选中的是 客源跟进 或者是 签约记录
+                    if (this.tabIndex == 1 || this.tabIndex == 3) {
+                        query = {customer_id: this.customer.id};
+                    }
+                    //  房源列表暂时不需要 第二个源对象   所以为 空 query = {}
+
+                    let data = Object.assign({'page': this.datasPage},
+                        this.tabs[this.tabIndex - 1].query, query, this.header);
+                    console.log(data);
+                    utils.ajax({
+                        data: data,
+                        success: (res) => {
+
+                            // this.getTabDataList();
+                            console.log(res.data);
+                            this.loading = false;  // 关闭加载动画
+                            let count = 0
+                            if (res.data.code == 1) {
+                                let data = res.data.data;
+                                this.lists = data;
+                                count = data.length;
+                            }
+                            this.datasNextBtn = count >= 10 ? false : true;
+
+
+                        },
+                        error: function (res) {
+                            console.log('error' + res)
+                        }
+                    })
+                },
+
+                getTabDataListss() {
+                    this.listsss = [];
+                    this.loading = true;
+                    let query = {};
+                    //  房源列表暂时不需要 第二个源对象   所以为 空 query = {}
+
+                    let data = Object.assign({'page': this.datasNextBtnss},
+                        this.tabs[1].query, query, this.header);
+                    console.log(data);
+                    utils.ajax({
+                        data: data,
+                        success: (res) => {
+
+
+                            console.log(res.data);
+                            this.loading = false;  // 关闭加载动画
+                            let count = 0
+                            if (res.data.code == 1) {
+                                let data = res.data.data;
+                                this.listsss = data;
+                                count = data.length;
+                            }
+                            this.datasNextBtnss = count >= 10 ? false : true;
+                        },
+                        error: function (res) {
+                            console.log('error' + res)
+                        }
+                    })
+                },
+
+                getFollowOption(index) {
+                    let follows = Object.keys(this.followOption);
+                    // console.log('follows.length: ' + follows.length);
+                    // if (follows.length == 0) {
+                    this.formDom.loading = true;
+                    let data = {};
+                    if (index == 1) {
+                        data = Object.assign({url: 'extend/manager/HouseFollow/getFollowOption'}, this.header);
+                    } else {
+                        data = Object.assign({url: 'extend/manager/houseSign/getSignOption'}, this.header);
+                        data.house_type_id = 1;
+                    }
+                    console.log(data);
+                    utils.ajax({
+                        data: data,
+                        success: (res) => {
+                            console.log(res);
+                            this.formDom.loading = false;  // 关闭加载动画
+                            if (res.data.code == 1) {
+                                let value = [];
+                                for (let i of res.data.data) {
+                                    if (index == 1) {
+                                        value.push({'title': i.key, 'value': i.id});
+                                    } else {
+                                        value.push({'title': i.title, 'value': i.id});
+                                    }
+                                }
+                                let data = {
+                                    'title': (index == 1)?'跟进进度':'签约进度', 'field': 'step',
+                                    'value': value,
+                                    'type': 'region'
+                                };
+                                for (let i in this.formDom.field) {
+                                    console.log(this.formDom.field[i].field);
+                                    if (this.formDom.field[i].field == "step") {
+                                        this.formDom.field[i] = data;
+                                        break;
+                                    } else if ((this.formDom.field.length - 1) == i) {
+                                        this.formDom.field.push(data);
+                                    }
+                                }
+                                // 将跟进状态的结构对象，赋值给followOption 对象，以便下次使用时不需要再次获取
+                                // this.followOption = data;
+                            }
+                        },
+                        error: function (res) {
+                            console.log('error' + res);
+                        }
+                    })
+                    // } else {
+                    //     this.formDom.field.push(this.followOption);
+                    // }
+                }
+            },
+            // 过滤器
+            filters: {
+                statusFilterType(status) {
+                    const statusMap = {'1': '有意向', '2': '看房', '3': '前订购协议', '4': '签合同', '5': '付款'};
+                    return statusMap[status];
+                },
+            }
+        });
+        //关闭右键菜单
+        window.onclick = function (e) {
+            myvue.$data.show = false;
+        }
+
+        //<editor-fold desc="js将php时间戳转换成格式化日期">
+        function to_date_time(phpstr) {
+            var str = parseInt(phpstr) * 1000;//将php时间戳转化为整形并乘以1000
+            var newDate = new Date(str);
+            var year = newDate.getUTCFullYear();//取年份
+            var month = newDate.getUTCMonth() + 1;//取月份
+            var nowday = newDate.getUTCDate();//取天数
+            var hours = newDate.getHours();//取小时
+            var minutes = newDate.getMinutes();//取分钟
+            var seconds = newDate.getSeconds();//取秒
+            return year + "-" + month + "-" + nowday + " " + hours + ":" + minutes + ":" + seconds;//拼接 2017-2-21 12:23:43
+        }
+    </script>
+</block>

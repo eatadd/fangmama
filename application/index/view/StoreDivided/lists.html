@@ -1,0 +1,543 @@
+<extend name="base/common" />
+
+<block name="body">
+    <style>
+        .el-header {
+            color: #333;
+            line-height: 60px;
+            text-align: right;
+            font-size: 12px
+        }
+
+        .el-aside {
+            color: #333;
+        }
+
+        #menu {
+            position: absolute;
+        }
+
+        .el-menu {
+            box-shadow: 0 0 5px #ddd;
+            z-index: 99;
+            border: 1px solid #ddd;
+        }
+
+        .el-menu-item {
+            color: #555;
+            border-bottom: 1px solid #f3f3f3;
+        }
+
+        .el-menu-item:focus,
+        .el-menu-item:hover {
+            background-color: #e6e9ed;
+            color: #ff5100
+        }
+
+        a {
+            text-decoration: none
+        }
+
+        .el-menu li {
+            height: 35px;
+            line-height: 35px;
+        }
+    </style>
+    <div id="app" v-hide>
+        <el-container>
+            <el-container v-loading="loading">
+                <el-header height="100px">
+                    <el-row>
+                        <el-col :span="5">
+                            <div class="grid-content bg-purple-dark">
+                                <div style="float: left;">
+
+                                    <el-button type="primary" @click="handleForm(null, null)" icon="el-icon-plus"
+                                        size="small">
+                                    </el-button>
+
+<!--                                    <el-button type="danger" icon="el-icon-delete" size="small" @click="open">-->
+<!--                                    </el-button>-->
+                                </div>
+                            </div>
+                        </el-col>
+                        <el-col :span="19" style="float: right">
+
+                        </el-col>
+                    </el-row>
+                </el-header>
+                <el-main style="margin-top: -15px;">
+                    <el-table @row-contextmenu="openDetails" :data="lists" @row-dblclick="row_clicks"
+                        style="width: 100%;border-top:1px solid #eee">
+                        <!-- <el-table-column type="selection" width="55">
+                        </el-table-column> -->
+                        <el-table-column v-for="(v,k) in fields" show-overflow-tooltip :label="v.label" :prop="v.prop">
+                        </el-table-column>
+                        <el-table-column label="操作" fixed="right" align="center">
+                            <template slot-scope="scope">
+                                <el-button type="text" @click.native="handleForm(scope.$index, scope.row)"
+                                    :loading="formLoading">
+                                    <i class="el-icon-edit"></i>
+                                </el-button>
+                                <el-button type="text" @click.native="handleDel(scope.$index, scope.row)"
+                                    :loading="deleteLoading">
+                                    <i class="el-icon-delete"></i>
+                                </el-button>
+                            </template>
+                        </el-table-column>
+                    </el-table>
+                </el-main>
+                <el-footer style="text-align: center">
+                    <!-- <el-pagination style="text-align: center" hide-on-single-page background layout="prev, pager, next"
+                        :total="50">
+                    </el-pagination> -->
+                    <el-button type="text" icon="el-icon-arrow-left" size="medium" :disabled="page == 1"
+                        @click="prevPage">上一页</el-button>
+                    <el-button type="text" size="medium" @click="nextPage" :disabled="nextBtn">下一页<i
+                            class="el-icon-arrow-right el-icon--right"></i></el-button>
+
+                </el-footer>
+            </el-container>
+        </el-container>
+        <transition name="el-zoom-in-top">
+            <div id="menu" v-show="show">
+                <el-row class="tac">
+                    <el-col>
+                        <el-menu active-text-color="#000">
+                            <!-- <template v-for="menuItems in menuItem">
+                                <a :href="menuItems.src">
+                                    <el-menu-item>
+                                        <span slot="title">{{menuItems.title}}</span>
+                                    </el-menu-item>
+                                </a>
+                            </template> -->
+
+                        </el-menu>
+                    </el-col>
+                </el-row>
+            </div>
+        </transition>
+        <el-dialog title="详情" :visible.sync="dialogFormVisible" width="70%">
+            <template>
+                <el-tabs v-model="activeName" @tab-click="handleClick" v-loading="tabLoading">
+                    <el-tab-pane v-for="(v,k) in tabs" :label="v.label" :name="v.name" :key="k">
+                        <el-table @row-contextmenu="openDetails" :data="tabLists" @row-click="row_click"
+                            style="width: 100%;border-top:1px solid #eee">
+                            <!-- <el-table-column type="selection" width="55">
+                                </el-table-column> -->
+                            <el-table-column v-for="(v1,k1) in v.table" show-overflow-tooltip :label="v1.label"
+                                :prop="v1.prop">
+                            </el-table-column>
+                        </el-table>
+
+                    </el-tab-pane>
+                    <div style="text-align: center">
+                        <el-button type="text" icon="el-icon-arrow-left" size="medium" :disabled="tabPage == 1"
+                            @click="tabPrevPage">上一页</el-button>
+                        <el-button type="text" size="medium" @click="tabNextPage" :disabled="tabDataNextBtn">下一页<i
+                                class="el-icon-arrow-right el-icon--right"></i></el-button>
+
+                    </div>
+                </el-tabs>
+
+            </template>
+
+        </el-dialog>
+        <el-dialog width="60%" :title="formName=='add'? '添加分成':'编辑分成'" :visible.sync="formVisible">
+            <el-form ref="form" :model="form" label-width="80px" v-loading="formLoading">
+                <template v-for="(fields, k) in formDom.field">
+                    <template v-if="fields.type == 'text'">
+                        <el-form-item :label="fields.title">
+                            <el-input v-model="form[fields.field]"></el-input>
+                        </el-form-item>
+                    </template>
+                    <template v-else-if="fields.type == 'number'">
+                        <el-form-item :label="fields.title">
+                            <el-input type="number" v-model="form[fields.field]"></el-input>
+                        </el-form-item>
+                    </template>
+                    <template v-else-if="fields.type == 'region'">
+                        <el-form-item :label="fields.title">
+                            <el-select v-model="form[fields.field]" placeholder="请选择">
+                                <template v-for="values in fields.value">
+                                    <el-option :label="values.title" :value="values.value"></el-option>
+                                </template>
+                            </el-select>
+                        </el-form-item>
+                    </template>
+                    <template v-else-if="fields.type == 'region'">
+                        <el-form-item :label="fields.title">
+                            <el-select v-model="form[fields.field]" placeholder="请选择">
+                                <template v-for="values in fields.value">
+                                    <el-option :label="values.title" :value="values.value"></el-option>
+                                </template>
+                            </el-select>
+                        </el-form-item>
+                    </template>
+                    <template v-else-if="fields.type == 'date'">
+                        <el-form-item :label="fields.title">
+                            <el-date-picker v-model="form[fields.field]" type="datetime" placeholder="选择日期"
+                                value-format="yyyy-MM-dd mm:ss">
+                            </el-date-picker>
+                        </el-form-item>
+                    </template>
+                    <template v-else-if="fields.type == 'textarea'">
+                        <el-form-item :label="fields.title">
+                            <el-input :autosize="{ minRows: 4}" type="textarea" :rows="4" v-model="form[fields.field]">
+                            </el-input>
+                        </el-form-item>
+                    </template>
+                    <template v-else-if="fields.type == 'upload_picture'">
+                        <el-form-item :label="fields.title">
+                            <el-upload action="https://jsonplaceholder.typicode.com/posts/" list-type="picture-card"
+                                :on-preview="handlePictureCardPreview" :on-remove="handleRemove">
+                                <i class="el-icon-plus"></i>
+                            </el-upload>
+                            <el-dialog :visible.sync="dialogVisible">
+                                <img width="100%" :src="dialogImageUrl" alt="">
+                            </el-dialog>
+                        </el-form-item>
+                    </template>
+                </template>
+                <el-form-item label="置业经理">
+                    <el-input @focus="row_clicks" v-model="store_user_nickname"></el-input>
+                </el-form-item>
+                <el-form-item>
+                    <el-button type="primary" @click="onSubmit">{{formName=='add'? '新增':'编辑'}}</el-button>
+                    <el-button @click="formVisible = false">取消</el-button>
+                </el-form-item>
+            </el-form>
+        </el-dialog>
+    </div>
+</block>
+<block name="js">
+    <script type="text/javascript">
+        let user_data = JSON.parse('{:cache("user_data")}');
+        let clickTimer = null;
+        var myvue = new Vue({
+            el: '#app',
+            data: {
+                lists: [],
+                fields: [
+                    {
+                        label: "置业经理",
+                        prop: 'store_user_info.nickname',
+                    },
+                    {
+                        label: "分成类型",
+                        prop: 'type',
+                    },
+                    {
+                        label: "分成金额",
+                        prop: 'money',
+                    },
+                    {
+                        label: '分成说明',
+                        prop: 'explain',
+                    },
+                    {
+                        label: '新增时间',
+                        prop: 'create_time',
+                    },
+
+                ],
+                value: '',
+                search: '',
+                input2: '',
+                show: false,
+                drawer: false,
+                direction: 'btt',
+                dialogFormVisible: false,
+                formVisible: false,
+                activeName: 'one',
+                activeIndex: '1',
+                activeIndex2: '1',
+                house: { id: "" },
+                loading: false,
+                customerFollows: [],
+                followOption: {},
+                tabs: [
+                    {
+                        label: '置业经理',   // 用户签约记录
+                        name: 'one',
+                        table: [
+                            {
+                                label: "编号",
+                                prop: 'user_id',
+                            },
+                            {
+                                label: '置业经理',
+                                prop: 'nickname'
+                            },
+                        ],
+                        query: {
+                            url: 'extend/manager/StoreManager/getBrokerage',
+                        },
+                    }
+                ],
+                tabLists: [],
+                tabIndex: 0,
+                tabLoading: false,
+                formIndex: 0,
+                tabPage: 1,
+                tabDataNextBtn: true,
+                header: { user_token: user_data.user_token.user_token, store_id: user_data.store_user_info.store_id },
+                page: 1,
+                nextBtn: true,
+                formDom: {
+                    field: [
+                        { 'title': '分成金额', 'field': 'money', 'value': 'name', 'type': 'text' },
+                        { 'title': '分成类型', 'field': 'type', 'value': [{ 'title': '新房', 'value': 1 }, { 'title': '租房', 'value': 2 }, { 'title': '二手房', 'value': 3 }], 'type': 'region' },
+                        { 'title': '分成说明', 'field': 'explain', 'value': 'remark', 'type': 'textarea' },
+
+                    ],
+                    action: { add: 'StoreManager/addBrokerage', edit: 'StoreManager/BrokerageEdit' },
+                    title: '添加分成',
+                    list: 'tableData'
+                },
+                form: {},
+                store_user_nickname: "",
+                formName: 'add',
+                formLoading: false,
+                index: 0,
+                deleteLoading: false
+            },
+            created() {
+                this.getLists();
+            },
+            methods: {
+                getLists() {
+                    this.loading = true;
+                    let data = Object.assign({
+                        url: 'extend/manager/StoreManager/BrokerageList',
+                        page: this.page,
+                    }, this.header);
+                    utils.ajax({
+                        data: data,
+                        success: (res) => {
+                            this.loading = false;
+                            console.warn(res);
+                            if (res.data.code == -2) {
+                                this.$message.error(res.data.msg);
+                                return false;
+                            }
+                            let data = res.data.data;
+                            // console.log(data);
+                            for(let i in data){
+                                data[i].type = (data[i].type = 1) ? '新房' : (data[i].type = 2) ? '二手房':'租房';
+                            }
+                            this.lists = data;
+                            this.nextBtn = data.length == 10 ? false : true;
+                        },
+                        error: function (res) {
+                            console.log('error' + res)
+                        }
+                    })
+                },
+                prevPage() {
+                    this.page--;
+                    this.getLists();
+                },
+                nextPage() {
+                    this.page++;
+                    this.getLists();
+                },
+                tabPrevPage() {
+                    this.tabPage--;
+                    this.getTabDataList();
+                },
+                tabNextPage() {
+                    this.tabPage++;
+                    this.getTabDataList();
+                },
+                handleSelect(key, keyPath) {
+                    console.log(key, keyPath);
+                },
+                open() {
+                    this.$confirm('此操作将永久删除该文件, 是否继续?', '提示', {
+                        confirmButtonText: '确定',
+                        cancelButtonText: '取消',
+                        type: 'warning'
+                    }).then(() => {
+                        this.$message({
+                            type: 'success',
+                            message: '删除成功!'
+                        });
+                    }).catch(() => {
+                        this.$message({
+                            type: 'info',
+                            message: '已取消删除'
+                        });
+                    });
+                },
+                openDetails(row, column, event) {
+                    event.preventDefault();
+                    row.id = row.id || 0;
+                    if (row.id == 0) {
+                        this.$message.error('数据异常');
+                        return;
+                    }
+                    // this.show = this.show ? false : true;
+                    this.show = true;
+                    var menu = document.querySelector("#menu");
+                    menu.style.left = event.clientX + 'px';
+                    menu.style.top = event.clientY + 'px';
+                },
+                // 置业经理列表单击，表示选中置业经理
+                row_click(row) {
+                    this.dialogFormVisible = false;
+                    this.form.store_user_id = row.user_id;
+                    this.store_user_nickname = row.nickname;
+
+                },
+                row_clicks(row, event) {
+                    if (clickTimer) {
+                        window.clearTimeout(clickTimer);
+                        clickTimer = null;
+                    }
+                    // 确定选中的房源
+                    this.house = Object.assign({}, row);
+                    // your click process code here
+                    this.dialogFormVisible = true;
+                    if (this.tabLists.length == 0) {
+                        this.getTabDataList();
+                    }
+                },
+                handleClick(tab, event) {
+                    // 绑定tab的index值（下标）
+                    this.tabIndex = tab.index;
+                    this.tabPage = 1;
+                    this.getTabDataList();
+
+                },
+                getTabDataList() {
+                    this.tabLists = [];
+                    this.tabLoading = true;
+                    let query = {};
+                    //  如果当前选中的是 客源跟进 或者是 签约记录
+                    //  房源列表暂时不需要 第二个源对象   所以为 空 query = {}
+
+                    let data = Object.assign({ 'page': this.tabPage, page_size: 10 },
+                        this.tabs[this.tabIndex].query, this.header);
+                    utils.ajax({
+                        data: data,
+                        success: (res) => {
+                            this.tabLoading = false;  // 关闭加载动画
+                            let count = 0;
+                            if (res.data.code == 1) {
+                                let data = res.data.data;
+                                this.tabLists = data;
+                                count = data.length;
+                            }
+                            // 下一页的按钮
+                            this.tabDataNextBtn = count >= 10 ? false : true;
+                        },
+                        error: function (res) {
+                            console.log('error' + res)
+                        }
+                    })
+                },
+                // 显示表单
+                handleForm(index, row) {
+                    console.log(index, row);
+
+                    this.formVisible = true;
+                    this.form = {};
+                    if (row !== null) {
+                        // this.form = Object.assign({}, row);
+                        this.form = {
+                            store_user_id: row.store_user_id,
+                            id: row.id,
+                            type: row.type,
+                            money: row.money,
+                            explain: row.explain
+                        }
+                        // this.form.store_user_id = row.store_user_id;
+                        this.store_user_nickname = row.store_user_info.nickname;
+                    }
+                    this.formName = "add";
+
+                    if (index !== null) {
+                        this.index = index;
+                        this.formName = "edit";
+                    }
+                },
+                onSubmit() {
+                    this.formLoading = true;
+
+                    let data = Object.assign({
+                        url: 'extend/manager/' + this.formDom.action[this.formName]
+                    }, this.form, this.header);
+                    console.log(data);
+                    utils.ajax({
+                        data: data,
+                        success: (res) => {
+                            this.formLoading = false;
+                            if (!res.data.code) {
+                                this.$message.error(res.data.msg);
+                                return false;
+                            }
+                            this.$message.success('操作成功');
+                            this.formVisible = false;
+                            data = Object.assign({ store_user_info: { nickname: this.store_user_nickname } }, this.form);
+
+                            if (this.formName === "add") {
+                                this.getLists();
+                            } else {
+                                this.lists.splice(this.index, 1, data);
+                            }
+                            this.form = {};
+                        },
+                        error: function (res) {
+                            console.log('error' + res)
+                        }
+                    })
+                },
+                // 删除
+                handleDel(index, row) {
+                    if (row.id) {
+                        this.$confirm("确认删除该记录吗?", "提示", {
+                            type: "warning"
+                        })
+                            .then(() => {
+                                let store_user_info = user_data.store_user_info || {};
+                                store_user_info.store_id = store_user_info.store_id || 0;
+                                this.deleteLoading = true;
+                                let param = { url: 'extend/manager/StoreManager/delPercentage', info_id: row.id ,store_id:store_user_info.store_id };
+                                console.log(param);
+                                utils.ajax({
+                                    data: param,
+                                    success: (res) => {
+                                        console.log(res)
+                                        this.deleteLoading = false;
+                                        if (!res.data.code) {
+                                            this.$message.error(res.data.msg);
+                                            return false;
+                                        }
+                                        this.$message.success("删除成功");
+                                        // 刷新数据
+                                        this.getLists();
+                                    }
+                                })
+
+                            })
+                            .catch(() => {
+                                this.$message.info("取消删除");
+                            });
+                    }
+                },
+            },
+            // 过滤器
+            filters: {
+                statusFilterType(status) {
+                    const statusMap = { '1': '有意向', '2': '看房', '3': '前订购协议', '4': '签合同', '5': '付款' };
+                    return statusMap[status];
+                },
+            }
+        });
+        //关闭右键菜单
+        window.onclick = function (e) {
+            myvue.$data.show = false;
+        }
+    </script>
+</block>
